@@ -1,12 +1,9 @@
 import { Renderer } from '../scripts/renderer.js';
-import { Cube } from '../scripts/cube.js';
-import { Plain } from '../scripts/plain.js';
 import { Light } from '../scripts/light.js';
 import { Scene } from '../scripts/scene.js';
 import { PerspectiveCamera } from '../scripts/camera.js';
-import { Geometry,TriangleGeometry } from '../scripts/geometry.js';
+import { create_triangle_geometry } from '../scripts/geometry.js';
 import { Skybox } from '../scripts/skybox.js';
-import { Triangle } from '../scripts/triangle.js';
 import { Animator } from '../scripts/object_3d.js';
 import { pickColor } from '../scripts/utils.js';
 import { MeshSpecularMaterial, MeshSimpleMaterial } from '../scripts/material.js';
@@ -23,7 +20,7 @@ function main() {
         const scene = new Scene();
 
         for (let i = 0; i < 1000; i++) {
-            const geometry = new TriangleGeometry(gl);
+            const geometry = create_triangle_geometry(gl);
             const material = new MeshSimpleMaterial(gl, {
                 isWireframe: !isFlat,
                 color: pickColor(Math.PI * 2 * Math.random()),
