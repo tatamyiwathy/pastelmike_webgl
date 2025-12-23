@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+        }
+
+        canvas {
+            border: 2px solid #333;
+            background-color: #000;
+            display: block;
+            margin: 20px auto;
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+
+        .info {
+            text-align: center;
+            margin: 20px;
+            color: #666;
+        }
+
+
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 28px;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 28px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 22px;
+            width: 22px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+input:checked + .slider {
+  background-color: #2196F3;
+}
+input:checked + .slider:before {
+  transform: translateX(22px);
+}        
+    </style>
+</head>
+
+<body>
+
+<label>
+  <input type="radio" name="type" value="flat" checked>
+  フラット
+</label>
+<label>
+  <input type="radio" name="type" value="wire">
+  ワイヤーフレーム
+</label>
+
+    <canvas id="canvas" width="800" height="600"></canvas>
+    <script src="https://cdn.jsdelivr.net/npm/gl-matrix@3.4.3/gl-matrix-min.js"></script>
+    <script type="module" src="./triangle_sample.js">
+    </script>
+</body>
+
+</html>
