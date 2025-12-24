@@ -23,36 +23,24 @@ function main() {
 
     const mouseState = {
         isMouseDown: false,
-        mouseX: 0,
-        mouseY: 0,
-        prevX: 0,
-        prevY: 0
+        mx: 0,
+        my: 0,
     }
     // マウスイベント
     window.addEventListener('mousedown', (event) => {
         event.preventDefault(); // デフォルトの動作をキャンセル（テキスト選択などを防止）
         mouseState.isMouseDown = true;
-        mouseState.mouseX = event.clientX;
-        mouseState.mouseY = event.clientY;
-        mouseState.prevX = mouseState.mouseX;
-        mouseState.prevY = mouseState.mouseY;
+
     });
     window.addEventListener('mouseup', (event) => {
         event.preventDefault();
         mouseState.isMouseDown = false;
-        mouseState.prevX = mouseState.mouseX;
-        mouseState.prevY = mouseState.mouseY;
     });
     window.addEventListener('mousemove', (event) => {
         event.preventDefault();
         if (mouseState.isMouseDown) {
-            // マウスが押されているときの処理
-            mouseState.prevX = mouseState.mouseX;
-            mouseState.prevY = mouseState.mouseY;
-            mouseState.mouseX = event.clientX;
-            mouseState.mouseY = event.clientY;
-
-            console.log(`MovementX: ${mouseState.mouseX - mouseState.prevX}, MovementY: ${mouseState.mouseY - mouseState.prevY}`);
+            mouseState.mx = event.movementX;
+            mouseState.my = event.movementY;
         }
     });
 
@@ -60,11 +48,13 @@ function main() {
 
 
     const renderer = new Renderer(canvas);
+    renderer.enableCulling = false;
 
     const gl = renderer.gl;
 
     const scene = new Scene();
     scene.isFog = true;
+    
 
     document.getElementById('fog_switch').addEventListener('change', (event) => {
         if (event.target.checked) {
@@ -174,9 +164,7 @@ function main() {
 
             glMatrix.quat.fromEuler(this.quat, this.pitch, this.yaw, 0);
 
-            // 2. [0, 0, 1] ベクトルを用意
-            // ※右手座標系の初期状態（回転なし）で「前」をどこにするか定義します
-            const forward = glMatrix.vec3.fromValues(0, 0, 1);
+            const forward = glMatrix.vec3.fromValues(0, 0, -1);
 
             // 3. クォータニオンを適用して回転させる
             glMatrix.vec3.transformQuat(this.look, forward, this.quat);
@@ -192,13 +180,13 @@ function main() {
     camera.position = [0, 1.5, 3];
     camera.look([0, 0, 1]);
     scene.addObject(camera);
-    let lookat_x = 0;
-    let lookat_y = 1.5;
+
     function render() {
 
-        const dYaw = -(mouseState.mouseX - mouseState.prevX) * 0.5;
-        const dPitch = (mouseState.mouseY - mouseState.prevY) * 0.5;
-
+        const dYaw = -mouseState.mx * 0.5;
+        const dPitch = mouseState.my * 0.5;
+        mouseState.mx = 0;
+        mouseState.my = 0;
         cameraHead.update(camera, dPitch, dYaw);
 
         renderer.render(scene, camera);
