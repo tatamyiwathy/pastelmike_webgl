@@ -17,14 +17,8 @@ import { create_torus_geometory } from '../scripts/geometry.js';
 
 function main() {
     const canvas = document.getElementById('canvas');
-
-    function resizeCanvas() {
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
-    }
-    resizeCanvas();
-    window.addEventListener('resize', resizeCanvas);
-
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
 
     const renderer = new Renderer(canvas);
 
@@ -138,6 +132,14 @@ function main() {
 
     render();
 }
+
+function resizeCanvas() {
+    main();
+}
+resizeCanvas();
+window.addEventListener('resize', resizeCanvas);
+
+
 
 
 main();
