@@ -4,91 +4,111 @@
     <meta charset="utf-8">
     <title>WebGL Samples | Archive</title>
     <style>
-        :root {
-            --bg-color: #0a0a0a;
-            --text-color: #ffffff;
-            --accent-color: #404040;
-            --hover-color: #888888;
-        }
+:root {
+    /* パステル三毛カラーパレット */
+    --bg-color: #fcfaf5;      /* 柔らかな生成り色（白毛部分） */
+    --text-color: #5d524a;    /* 濃い茶色（文字・視認性確保） */
+    --accent-orange: #f3d6b6; /* パステルオレンジ（茶毛部分） */
+    --accent-gray: #d4d9dc;   /* パステルグレー（黒毛部分） */
+    --hover-bg: #ffffff;
+    --border-color: #e8e2d9;
+}
 
-        body {
-            margin: 0;
-            padding: 0;
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            letter-spacing: 0.05em;
-        }
+body {
+    margin: 0;
+    padding: 0;
+    background-color: var(--bg-color);
+    /* わずかに和紙のような質感を入れると三毛っぽさが引き立ちます */
+    background-image: radial-gradient(var(--accent-orange) 0.5px, transparent 0.5px);
+    background-size: 30px 30px;
+    background-opacity: 0.1; /* 非常に薄いドット */
+    color: var(--text-color);
+    font-family: "Quicksand", "Inter", "Hiragino Sans", "Meiryo", sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    letter-spacing: 0.08em;
+}
 
-        .container {
-            width: 100%;
-            max-width: 400px;
-            padding: 40px;
-        }
+.container {
+    width: 100%;
+    max-width: 400px;
+    padding: 40px;
+    background: rgba(255, 255, 255, 0.7); /* 半透明の白で文字を読みやすく */
+    backdrop-filter: blur(10px);
+    border-radius: 30px;
+    box-shadow: 20px 20px 60px #e6e1d7, -20px -20px 60px #ffffff;
+}
 
-        header {
-            margin-bottom: 60px;
-        }
+header {
+    margin-bottom: 60px;
+}
 
-        h1 {
-            font-size: 0.75rem;
-            font-weight: 300;
-            text-transform: uppercase;
-            color: var(--hover-color);
-            margin: 0;
-            border-left: 1px solid var(--accent-color);
-            padding-left: 15px;
-        }
+h1 {
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    color: var(--text-color);
+    margin: 0;
+    border-left: 4px solid var(--accent-orange);
+    padding-left: 15px;
+}
 
-        nav {
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-        }
+nav {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
 
-        .sample-link {
-            position: relative;
-            text-decoration: none;
-            color: var(--text-color);
-            font-size: 1.2rem;
-            font-weight: 200;
-            padding: 10px 0;
-            transition: all 0.4s cubic-bezier(0.25, 0.1, 0.25, 1);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 1px solid var(--accent-color);
-        }
+.sample-link {
+    position: relative;
+    text-decoration: none;
+    color: var(--text-color);
+    font-size: 1.1rem;
+    font-weight: 500;
+    padding: 15px 20px;
+    transition: all 0.3s ease;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-radius: 15px;
+    background: transparent;
+    border: 1px solid transparent;
+}
 
-        .sample-link::after {
-            content: '→';
-            font-size: 0.9rem;
-            opacity: 0;
-            transform: translateX(-10px);
-            transition: all 0.4s ease;
-        }
+/* ホバー時に三毛の「斑点」をイメージした配色に */
+.sample-link:hover {
+    background-color: var(--hover-bg);
+    border-color: var(--accent-gray);
+    color: var(--text-color);
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+}
 
-        .sample-link:hover {
-            color: var(--hover-color);
-            padding-left: 10px;
-        }
+/* リンクごとにアクセントの色を変える遊び心（三毛の斑点分け） */
+.sample-link:nth-child(1):hover { border-left: 8px solid var(--accent-orange); }
+.sample-link:nth-child(2):hover { border-left: 8px solid var(--accent-gray); }
+.sample-link:nth-child(3):hover { border-left: 8px solid var(--accent-orange); }
 
-        .sample-link:hover::after {
-            opacity: 1;
-            transform: translateX(0);
-        }
+.sample-link::after {
+    content: '🐾'; /* 矢印を肉球に変更 */
+    font-size: 0.9rem;
+    opacity: 0;
+    transition: all 0.3s ease;
+}
 
-        .footer-info {
-            margin-top: 80px;
-            font-size: 0.6rem;
-            color: var(--accent-color);
-            text-align: right;
-        }
-    </style>
+.sample-link:hover::after {
+    opacity: 0.5;
+}
+
+.footer-info {
+    margin-top: 80px;
+    font-size: 0.65rem;
+    color: #b5ada3;
+    text-align: center;
+    font-weight: bold;
+}    </style>
 </head>
 <body>
 
@@ -104,7 +124,6 @@
         </nav>
 
         <div class="footer-info">
-            &copy; 2024 ARCHIVE. ALL RIGHTS RESERVED.
         </div>
     </div>
 
