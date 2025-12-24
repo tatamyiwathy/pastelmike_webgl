@@ -68,14 +68,18 @@ void main() {
 
 // ディフューズ・スペキュラ・フォグ対応頂点シェーダー
 const vertexShaderSource = `
-    in vec3 position;
-    in vec3 normal;
-    in vec2 texcoord; // UV座標 (vt)    
+    precision mediump float;
+
     uniform mat4 mvpMtx;
     uniform mat4 modelMatrix;
     uniform mat4 normalMatrix;
     uniform mat4 viewMatrix;
     uniform vec3 directionalLightDir;  // 光の方向
+
+    in vec3 position;
+    in vec3 normal;
+    in vec2 texcoord; // UV座標 (vt)    
+
     out vec3 v_worldPosition;
     out vec3 v_normal;
     out vec3 v_directionalLightDir;    
@@ -93,9 +97,9 @@ const vertexShaderSource = `
 
         v_texcoord = texcoord; // そのままフラグメントシェーダーへ
 
-        vec4 viewPosition = viewMatrix * worldPosition;
 #ifdef USE_FOG
-        v_depth = abs(viewPosition.z);   // fog
+        vec4 viewPosition = viewMatrix * worldPosition;
+        v_depth = length(viewPosition.xyz);
 #endif
         gl_Position = mvpMtx * vec4(position, 1.0);
     }
@@ -104,12 +108,12 @@ const vertexShaderSource = `
 const fragmentShaderSource = `
     precision mediump float;
 
+    uniform vec3 cameraPos;
     uniform vec4 color;
     uniform bool useTexture;
-    uniform vec3 fogColor;
+    uniform vec4 fogColor;
     uniform float fogStart;
     uniform float fogEnd;
-    uniform vec3 cameraPos; // 追加：カメラのワールド座標
     uniform float shininess;
     uniform sampler2D samples; // CPU側からバインドされたテクスチャデータ
     uniform vec3 directionalLightColor;
@@ -158,7 +162,7 @@ const fragmentShaderSource = `
 #ifdef USE_FOG
         float fogFactor = (fogEnd - v_depth) / (fogEnd - fogStart);
         fogFactor = clamp(fogFactor, 0.0, 1.0);
-        outColor.rgb = mix(fogColor, outColor.rgb, fogFactor);
+        outColor.rgb = mix(fogColor.rgb, outColor.rgb, fogFactor);
 #endif
     }
 `;
@@ -225,7 +229,7 @@ precision highp float;
 precision mediump int;
 
 uniform samplerCube u_skybox;
-uniform vec3 fogColor; // フォグの色 (e.g., vec3(0.5, 0.5, 0.5))
+uniform vec4 fogColor; // フォグの色 (e.g., vec3(0.5, 0.5, 0.5))
 uniform float fogStart; // フォグが始まる距離
 uniform float fogEnd; // フォグが完全に不透明になる距離
 
@@ -239,11 +243,12 @@ void main() {
     fragColor = texture(u_skybox, v_texCoord); // 【修正点 4】
 
 #ifdef USE_FOG
-    float fogFactor = (fogEnd - v_depth) / (fogEnd - fogStart);
-    fogFactor = clamp(fogFactor, 0.0, 1.0);
-    vec3 finalColor = mix(fogColor, fragColor.rgb, fogFactor);
-    fragColor = vec4(finalColor, 1.0);
+    vec3 finalColor = mix(fogColor.rgb , fragColor.rgb, fogColor.a);
+#else
+    vec3 finalColor = fragColor.rgb;
 #endif
+
+    fragColor = vec4(finalColor, 1.0);
 }
 `;
 
@@ -422,12 +427,12 @@ class BasicShader extends ShaderProgram {
         //gl.uniformMatrix4fv(this.projectionMatrixLocation, false, renderContext.projectionMatrix);
         gl.uniform4f(this.colorLocation, renderContext.color[0], renderContext.color[1], renderContext.color[2], renderContext.color[3]);
         gl.uniform1i(this.useTextureLocation, renderContext.useTexture);
-        gl.uniform3f(this.fogColorLocation, renderContext.fogColor[0], renderContext.fogColor[1], renderContext.fogColor[2]); // フォグの色
+        gl.uniform4f(this.fogColorLocation, ...renderContext.fogColor); // フォグの色
         gl.uniform1f(this.fogStartLocation, renderContext.fogStart); // フォグが始まる距離
         gl.uniform1f(this.fogEndLocation, renderContext.fogEnd); // フォグが完全に不透明になる距離
         gl.uniform3f(this.directionalLightDirLocation, ...renderContext.directionalLightDir); // 平行光源
         gl.uniform3f(this.directionalLightColorLocation, ...renderContext.directionalLightColor); // 白色光源
-        gl.uniform3f(this.cameraPosLocation, renderContext.cameraPos[0], renderContext.cameraPos[1], renderContext.cameraPos[2]); // 追加：カメラのワールド座標
+        gl.uniform3f(this.cameraPosLocation, ...renderContext.cameraPos); // 追加：カメラのワールド座標
         gl.uniform1f(this.shininessLocation, renderContext.shininess); // 追加：鏡面反射の鋭さ
 
         if (renderContext.wireFrame) {
@@ -450,7 +455,7 @@ class SkyBoxShader extends ShaderProgram {
         this.viewMatrix = gl.getUniformLocation(this.program, 'viewMatrix');
 
         this.skybox = gl.getUniformLocation(this.program, 'u_skybox');
-        this.fogColor = gl.getUniformLocation(this.program, 'fogColor'); // フォグの色 (e.g., vec3(0.5, 0.5, 0.5))
+        this.fogColor = gl.getUniformLocation(this.program, 'fogColor'); // フォグの色
         this.fogStart = gl.getUniformLocation(this.program, 'fogStart'); // フォグが始まる距離
         this.fogEnd = gl.getUniformLocation(this.program, 'fogEnd'); // フォグが完全に不透明になる距離
 
@@ -467,7 +472,7 @@ class SkyBoxShader extends ShaderProgram {
         gl.uniformMatrix4fv(this.viewDirectionProjectionMatrix,false,renderContext.modelViewProjection);
         gl.uniformMatrix4fv(this.viewMatrix, false, renderContext.viewMatrix);
 
-        gl.uniform3f(this.fogColor, renderContext.fogColor[0], renderContext.fogColor[1], renderContext.fogColor[2]); // フォグの色
+        gl.uniform4f(this.fogColor, ...renderContext.fogColor); // フォグの色
         gl.uniform1f(this.fogStart, renderContext.fogStart); // フォグが始まる距離
         gl.uniform1f(this.fogEnd, renderContext.fogEnd); // フォグが完全に不透明になる距離
 

@@ -54,12 +54,15 @@ function main() {
 
     const scene = new Scene();
     scene.isFog = true;
-    
+    scene.fogStart = 1.0;
+    scene.fogEnd = 4.0;
+    scene.fogColor = [0.5, 0.5, 0.5, 0.25];
+
 
     document.getElementById('fog_switch').addEventListener('change', (event) => {
-        if (event.target.checked) {
+        if (!event.target.checked) {
             scene.fogStart = 1.0;
-            scene.fogEnd = 5.0;
+            scene.fogEnd = 4.0;
         } else {
             scene.isFog = false;
             scene.fogStart = 1000.0;
@@ -83,7 +86,7 @@ function main() {
     const plain_geometry = create_plain_geometry(gl, 50);
     const plain_material = new MeshSpecularMaterial(gl);
     const plain_mesh = new Mesh(gl, plain_geometry, plain_material);
-    plain_mesh.material.color = [0.5, 0.5, 0.5, 1]; // グレーに設定
+    plain_mesh.material.color = [1, 1, 1, 1]; // 白に設定
     scene.addObject(plain_mesh);
 
 
@@ -101,22 +104,6 @@ function main() {
     console.log('skybox', skybox);
     scene.addObject(skybox, { layer: 0 });
 
-
-    // for (let i = 0; i < 500; i++){
-    //     const p = new MyParticle(gl);
-    //     // 半径40の球内のランダム位置
-    //     const radius = Math.random() * 40; // 0～40のランダム
-    //     const theta = Math.random() * Math.PI * 2; // 0～2πのランダム
-    //     const phi = Math.acos(Math.random() * 2 - 1); // 0～πのランダム（球面均等分布）
-
-    //     const position = [
-    //         radius * Math.sin(phi) * Math.cos(theta),
-    //         radius * Math.sin(phi) * Math.sin(theta),
-    //         radius * Math.cos(phi)
-    //     ];
-    //     p.position = position;
-    //     scene.addObject(p, {layer: 1} );
-    // }
 
     for (let i = 0; i < 1000; i++) {
         const geometry = create_triangle_geometry(gl, Math.random() * 0.5 + 0.1);
@@ -164,7 +151,7 @@ function main() {
 
             glMatrix.quat.fromEuler(this.quat, this.pitch, this.yaw, 0);
 
-            const forward = glMatrix.vec3.fromValues(0, 0, -1);
+            const forward = glMatrix.vec3.fromValues(0, 0, 1);
 
             // 3. クォータニオンを適用して回転させる
             glMatrix.vec3.transformQuat(this.look, forward, this.quat);
@@ -183,8 +170,8 @@ function main() {
 
     function render() {
 
-        const dYaw = -mouseState.mx * 0.5;
-        const dPitch = mouseState.my * 0.5;
+        const dYaw = -mouseState.mx * 0.1;
+        const dPitch = -mouseState.my * 0.1;
         mouseState.mx = 0;
         mouseState.my = 0;
         cameraHead.update(camera, dPitch, dYaw);
@@ -199,7 +186,6 @@ function main() {
 function resizeCanvas() {
     main();
 }
-resizeCanvas();
 window.addEventListener('resize', resizeCanvas);
 
 

@@ -27,7 +27,7 @@ class Scene {
 
         this.isFog = false;
 
-        this.fogColor = [0.5, 0.5, 0.5]; // フォグの色
+        this.fogColor = [0.5, 0.5, 0.5, 0.0]; // フォグの色
         this.fogStart = 100.0; // フォグが始まる距離
         this.fogEnd = 100.0; // フォグが完全に不透明になる距離
 

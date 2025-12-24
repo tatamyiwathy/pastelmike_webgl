@@ -57,6 +57,7 @@ export class Renderer {
         
         if( this.readyShader == false ) {
             this.shaderContext.isFog = scene.isFog ? true : false;
+            console.log("Shader isFog:", this.shaderContext.isFog);
             scene.objGroups.forEach((group) => {
                 group.objects.forEach((obj) => {
                     this.shaderContext.isSpecular = obj.material && obj.material.specular ? true : false;
@@ -144,7 +145,7 @@ export class Renderer {
         });
     }
 
-    static defaultFogColor = [0.5, 0.5, 0.5];
+    static defaultFogColor = [0.5, 0.5, 0.5, 1.0];
     static defaultColor = [1.0, 1.0, 1.0, 1.0];
     static renderContext;
 
