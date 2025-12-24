@@ -78,7 +78,7 @@ input:checked + .slider:before {
 
 <body>
 
-<label>
+<!-- <label>
   <input type="radio" name="type" value="flat" checked>
   フラット
 </label>
@@ -86,6 +86,11 @@ input:checked + .slider:before {
   <input type="radio" name="type" value="wire">
   ワイヤーフレーム
 </label>
+ -->
+            <div id="ui-panel">
+                <div class="label">Objs: <span id="obj-count">10000</span></div>
+                <input type="range" id="obj-slider" min="0" max="100000" step="50" value="10000">
+            </div>
 
     <canvas id="canvas" width="800" height="600"></canvas>
     <script src="https://cdn.jsdelivr.net/npm/gl-matrix@3.4.3/gl-matrix-min.js"></script>
