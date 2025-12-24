@@ -4,6 +4,8 @@ import { MathUtils } from "./math_utils.js";
 class Camera extends Object3d {
     constructor(options = {}) {
         super('camera', options);
+        this.up = options.up || [0, 1, 0];
+        this.position = options.position || [0, 0, 0];
     }
     lookAt(target) { }
 }
@@ -22,6 +24,10 @@ class PerspectiveCamera extends Camera {
 
     lookAt(target) {
         this.mdlViewMtx = MathUtils.lookAt(this.position, target, this.up);
+    }
+
+    look(forward) {
+        this.mdlViewMtx = MathUtils.look(this.position, forward, this.up);
     }
 }
 

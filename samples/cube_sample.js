@@ -2,10 +2,10 @@ import { Renderer } from '../scripts/renderer.js';
 import { Light } from '../scripts/light.js';
 import { Scene } from '../scripts/scene.js';
 import { PerspectiveCamera } from '../scripts/camera.js';
-import { 
-    create_cube_geometry, 
-    create_plain_geometry, 
-    create_triangle_geometry, 
+import {
+    create_cube_geometry,
+    create_plain_geometry,
+    create_triangle_geometry,
 } from '../scripts/geometry.js';
 import { Skybox } from '../scripts/skybox.js';
 import { Animator } from '../scripts/object_3d.js';
@@ -20,6 +20,45 @@ function main() {
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
 
+
+    const mouseState = {
+        isMouseDown: false,
+        mouseX: 0,
+        mouseY: 0,
+        prevX: 0,
+        prevY: 0
+    }
+    // マウスイベント
+    window.addEventListener('mousedown', (event) => {
+        event.preventDefault(); // デフォルトの動作をキャンセル（テキスト選択などを防止）
+        mouseState.isMouseDown = true;
+        mouseState.mouseX = event.clientX;
+        mouseState.mouseY = event.clientY;
+        mouseState.prevX = mouseState.mouseX;
+        mouseState.prevY = mouseState.mouseY;
+    });
+    window.addEventListener('mouseup', (event) => {
+        event.preventDefault();
+        mouseState.isMouseDown = false;
+        mouseState.prevX = mouseState.mouseX;
+        mouseState.prevY = mouseState.mouseY;
+    });
+    window.addEventListener('mousemove', (event) => {
+        event.preventDefault();
+        if (mouseState.isMouseDown) {
+            // マウスが押されているときの処理
+            mouseState.prevX = mouseState.mouseX;
+            mouseState.prevY = mouseState.mouseY;
+            mouseState.mouseX = event.clientX;
+            mouseState.mouseY = event.clientY;
+
+            console.log(`MovementX: ${mouseState.mouseX - mouseState.prevX}, MovementY: ${mouseState.mouseY - mouseState.prevY}`);
+        }
+    });
+
+
+
+
     const renderer = new Renderer(canvas);
 
     const gl = renderer.gl;
@@ -28,7 +67,7 @@ function main() {
     scene.isFog = true;
 
     document.getElementById('fog_switch').addEventListener('change', (event) => {
-        if(event.target.checked){
+        if (event.target.checked) {
             scene.fogStart = 1.0;
             scene.fogEnd = 5.0;
         } else {
@@ -38,7 +77,7 @@ function main() {
         }
     });
 
-    const cube_geometry = new create_cube_geometry(gl, 2, 2, 2);    
+    const cube_geometry = new create_cube_geometry(gl, 2, 2, 2);
     const cube_material = new MeshSpecularMaterial(gl);
     const cube_mesh = new Mesh(gl, cube_geometry, cube_material);
     cube_mesh.position = [2, 1, 0];
@@ -47,11 +86,11 @@ function main() {
 
     {
         const light = new Light(gl, -1, 0, 0);
-        light.color = [1,1,1]; // 白色光源
+        light.color = [1, 1, 1]; // 白色光源
         scene.addObject(light);
     }
 
-    const plain_geometry = create_plain_geometry(gl,50);
+    const plain_geometry = create_plain_geometry(gl, 50);
     const plain_material = new MeshSpecularMaterial(gl);
     const plain_mesh = new Mesh(gl, plain_geometry, plain_material);
     plain_mesh.material.color = [0.5, 0.5, 0.5, 1]; // グレーに設定
@@ -120,12 +159,48 @@ function main() {
         }
     }
 
-    const camera = new PerspectiveCamera(Math.PI / 2, canvas.width / canvas.height, 0.1, 100, { animator: new CameraAnimator() });
-    camera.position = [0, 0, 3];
-    camera.lookAt([0, 0, 0]);
-    scene.addObject(camera);
 
+    class CameraHead {
+        constructor() {
+            this.yaw = 0;// 左右の回転
+            this.pitch = 0; // 上下の回転
+            this.quat = glMatrix.quat.create();
+            this.look = glMatrix.vec3.create();
+        }
+
+        update(camera, dPitch, dYaw) {
+            this.pitch += dPitch;
+            this.yaw += dYaw;
+
+            glMatrix.quat.fromEuler(this.quat, this.pitch, this.yaw, 0);
+
+            // 2. [0, 0, 1] ベクトルを用意
+            // ※右手座標系の初期状態（回転なし）で「前」をどこにするか定義します
+            const forward = glMatrix.vec3.fromValues(0, 0, 1);
+
+            // 3. クォータニオンを適用して回転させる
+            glMatrix.vec3.transformQuat(this.look, forward, this.quat);
+
+            camera.look(this.look);
+        }
+
+    }
+
+    const cameraHead = new CameraHead();
+
+    const camera = new PerspectiveCamera(Math.PI / 2, canvas.width / canvas.height, 0.1, 100, {});
+    camera.position = [0, 1.5, 3];
+    camera.look([0, 0, 1]);
+    scene.addObject(camera);
+    let lookat_x = 0;
+    let lookat_y = 1.5;
     function render() {
+
+        const dYaw = -(mouseState.mouseX - mouseState.prevX) * 0.5;
+        const dPitch = (mouseState.mouseY - mouseState.prevY) * 0.5;
+
+        cameraHead.update(camera, dPitch, dYaw);
+
         renderer.render(scene, camera);
         requestAnimationFrame(render);
     }

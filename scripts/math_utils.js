@@ -187,6 +187,27 @@ export const MathUtils = {
             -vec3.dot(zAxis, cameraPos),
             1
         ]);
+    },
+
+    look: function (cameraPos, forward, up) {
+        // cameraPos: [x, y, z]
+        // forward: [x, y, z] (カメラの視線方向。必ず単位ベクトルにすること)
+        // up: [x, y, z] (世界の真上 [0, 1, 0] など)
+
+        const zAxis = vec3.normalize([-forward[0], -forward[1], -forward[2]]);
+        const xAxis = vec3.normalize(vec3.cross(up, zAxis));
+        const yAxis = vec3.cross(zAxis, xAxis); // 正規化済みベクトル同士の外積なので再正規化不要
+
+        return new Float32Array([
+            xAxis[0], yAxis[0], zAxis[0], 0,
+            xAxis[1], yAxis[1], zAxis[1], 0,
+            xAxis[2], yAxis[2], zAxis[2], 0,
+            -vec3.dot(xAxis, cameraPos),
+            -vec3.dot(yAxis, cameraPos),
+            -vec3.dot(zAxis, cameraPos),
+            1
+        ]);
     }
 
 };
+
