@@ -111,17 +111,25 @@ const fragmentShaderSource = `
     uniform vec3 cameraPos;
     uniform vec4 color;
     uniform bool useTexture;
+    uniform sampler2D samples; // CPU側からバインドされたテクスチャデータ
+
+    // フォグ
     uniform vec4 fogColor;
     uniform float fogStart;
     uniform float fogEnd;
+
+    // ライト
     uniform float shininess;
-    uniform sampler2D samples; // CPU側からバインドされたテクスチャデータ
     uniform vec3 directionalLightColor;
+    uniform vec3 pointLightPosition;    // 点光源の位置
+    uniform vec3 pointLightColor;       // 点光源の色
+    // uniform vec3 viewPosition;     // カメラ位置 cameraPosで代用
+    uniform float constant, linear, quadratic; // 減衰係数
+    uniform bool usePointLight;
 
     in vec3 v_worldPosition;
     in vec3 v_normal;
     in vec3 v_directionalLightDir;
-    
     in float v_depth;
     in vec2 v_texcoord;   // 頂点シェーダーから届いたUV
     
@@ -130,17 +138,27 @@ const fragmentShaderSource = `
     void main() {
         // ベクトルの正規化
         vec3 N = normalize(v_normal);
-        vec3 L = normalize(v_directionalLightDir);
+        vec3 Ld = normalize(v_directionalLightDir);
+        vec3 Lp = normalize(pointLightPosition - v_worldPosition); // 点光源から頂点への方向ベクトル
         vec3 V = normalize(cameraPos - v_worldPosition); // 視線方向
 
-        // --- 1. ディフューズ (Diffuse) ---
-        // 0.3は暗部の底上げ（簡易アンビエント）
-        float diff = max(dot(N, L), 0.0);
-        vec3 diffuseColor = color.rgb * directionalLightColor * (diff * 0.7 + 0.25);
+        // ポイントライト
+        vec3 diffuseP = vec3(0.0);
+        if (usePointLight) {
+            float diffP = max(dot(N, Lp), 0.0);
+            float distance = length(pointLightPosition - v_worldPosition);
+            float attenuation = 1.0 / (constant + linear * distance + quadratic * (distance * distance));
+            diffuseP = diffP * pointLightColor * attenuation;
+        }
+        // 平行光源
+        float diffD = max(dot(N, Ld), 0.0);
+        //vec3 diffuseColor = color.rgb * directionalLightColor * (diff * 0.7 + 0.25);
+        vec3 diffuseD = diffD * directionalLightColor;
 
+        vec3 diffuse = diffuseD + diffuseP;
 #ifdef USE_SPECULAR
         // --- 2. スペキュラ (Specular: Phong反射モデル) ---
-        vec3 R = reflect(-L, N); // 光の反射ベクトル
+        vec3 R = reflect(-Ld, N); // 光の反射ベクトル
         float specStrength = pow(max(dot(R, V), 0.0), shininess); // 32.0は輝きの鋭さ
         vec3 specularColor = vec3(1.0) * specStrength; // 白色のハイライト
 #else
@@ -153,7 +171,7 @@ const fragmentShaderSource = `
             // 頂点シェーダーから渡されたUV座標をそのまま使う
             combinedColor = texture(samples, v_texcoord).rgb;
         } else {
-            combinedColor = diffuseColor + specularColor;
+            combinedColor = diffuseD + diffuseP + specularColor;
         }
 
         outColor = vec4(combinedColor, color.a);
@@ -392,7 +410,12 @@ class BasicShader extends ShaderProgram {
         this.cameraPosLocation = gl.getUniformLocation(this.program, 'cameraPos'); // 追加：カメラのワールド座標
         this.shininessLocation = gl.getUniformLocation(this.program, 'shininess'); // 追加：鏡面反射の鋭さ
         this.samplesLocation = gl.getUniformLocation(this.program, 'samples'); // テクスチャサンプラー
-
+        this.pointLightPositionLocation = gl.getUniformLocation(this.program, 'pointLightPosition'); // 点光源の位置
+        this.pointLightColorLocation = gl.getUniformLocation(this.program, 'pointLightColor'); // 点光源の色
+        this.constantLocation = gl.getUniformLocation(this.program, 'constant'); // 減衰係数（定数項）
+        this.linearLocation = gl.getUniformLocation(this.program, 'linear'); // 減衰係数（一次項）
+        this.quadraticLocation = gl.getUniformLocation(this.program, 'quadratic'); // 減衰係数（二次項）
+        this.usePointLightLocation = gl.getUniformLocation(this.program, 'usePointLight');
     }
 
     render(gl, renderContext, geometry) {
@@ -434,6 +457,13 @@ class BasicShader extends ShaderProgram {
         gl.uniform3f(this.directionalLightColorLocation, ...renderContext.directionalLightColor); // 白色光源
         gl.uniform3f(this.cameraPosLocation, ...renderContext.cameraPos); // 追加：カメラのワールド座標
         gl.uniform1f(this.shininessLocation, renderContext.shininess); // 追加：鏡面反射の鋭さ
+
+        gl.uniform3f(this.pointLightPositionLocation, ...renderContext.pointLightPosition); // 点光源の位置
+        gl.uniform3f(this.pointLightColorLocation, ...renderContext.pointLightColor); // 点光源の色
+        gl.uniform1f(this.constantLocation, renderContext.constant); // 減衰係数（定数項）
+        gl.uniform1f(this.linearLocation, renderContext.linear); // 減衰係数（一次項）
+        gl.uniform1f(this.quadraticLocation, renderContext.quadratic); // 減衰係数（二次項）
+        gl.uniform1i(this.usePointLightLocation, renderContext.usePointLight); // 点光源の使用有無
 
         if (renderContext.wireFrame) {
             gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, geometry.wire_ibo.buffer);

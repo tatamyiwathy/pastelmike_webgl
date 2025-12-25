@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            overflow: hidden;
+            width: 100vw;
+            height: 100vh;
+        }
+
+        canvas {
+            border: 2px solid #333;
+            background-color: #000;
+            display: block;
+            margin: 20px auto;
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+
+        .info {
+            text-align: center;
+            margin: 20px;
+            color: #666;
+        }
+
+        .toggle-button-1 {
+            display: inline-block;
+            position: relative;
+            width: 50px;
+            height: 25px;
+            border-radius: 25px;
+            background-color: #dddddd;
+            cursor: pointer;
+            transition: background-color .4s;
+        }
+
+        .toggle-button-1:has(:checked) {
+            background-color: #4bd865;
+        }
+
+        .toggle-button-1::after {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 25px;
+            height: 25px;
+            border-radius: 50%;
+            box-shadow: 0 0 5px rgb(0 0 0 / 20%);
+            background-color: #fff;
+            content: '';
+            transition: left .4s;
+        }
+
+        .toggle-button-1:has(:checked)::after {
+            left: 25px;
+        }
+
+        .toggle-button-1 input {
+            display: none;
+        }
+    </style>
+</head>
+
+<body>
+
+
+    <canvas id="canvas" width="800" height="600"></canvas>
+
+
+    <div style="position: absolute; top: 50px; left: 50px;">
+        <label class="" , id="fog_switch">
+            <input type="checkbox" />
+        </label>フォグ ON/OFF
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/gl-matrix@3.4.3/gl-matrix-min.js"></script>
+    <script type="module" src="./point_light_sample.js">
+    </script>
+</body>
+
+</html>

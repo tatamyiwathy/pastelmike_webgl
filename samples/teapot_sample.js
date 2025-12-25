@@ -5,22 +5,35 @@ import { Mesh } from '../scripts/mesh.js';
 import { Animator } from '../scripts/object_3d.js';
 import { MeshSpecularMaterial, MeshSimpleMaterial } from '../scripts/material.js';
 import { create_plain_geometry } from '../scripts/geometry.js';
-import { Light } from '../scripts/light.js';
+import { PointLight, Light } from '../scripts/light.js';
 import { ObjLoader } from '../scripts/obj_loader.js';
 import { create_torus_geometory, create_sphere_geometry } from '../scripts/geometry.js';
 
 function main() {
     const canvas = document.getElementById('canvas');
     const renderer = new Renderer(canvas);
+    renderer.clearColor = [0.2, 0.3, 0.4, 1.0]; // 背景色を設定
 
-    function resizeCanvas() {
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
+    // function resizeCanvas() {
+    //     canvas.width = window.innerWidth;
+    //     canvas.height = window.innerHeight;
+    // }
+    // resizeCanvas();
+    // window.addEventListener('resize', resizeCanvas);
+
+    function getSwitchState(id) {
+        return document.getElementById(id).checked;
     }
-    resizeCanvas();
-    window.addEventListener('resize', resizeCanvas);
 
-    document.getElementById('wireframe_switch').addEventListener('change', (event) => {
+    renderer.usePointLight = true
+
+    function setElementEvent(id, property, callback) {
+        document.getElementById(id).addEventListener(property, (event) => {
+            callback(event);
+        });
+    }
+
+    setElementEvent('wireframe_switch', 'change', (event) => {
         const isWireframe = event.target.checked;
         scene.objGroups.forEach((group) => {
             group.objects.forEach((obj) => {
@@ -29,6 +42,10 @@ function main() {
                 }
             });
         });
+    });
+
+    setElementEvent('point_light_switch', 'change', (event) => {
+        renderer.usePointLight = event.target.checked;
     });
 
     const gl = renderer.gl;
@@ -45,12 +62,9 @@ function main() {
     plainMesh.material.color = [0.5, 0.5, 0.5, 1]; // グレーに設定
     scene.addObject(plainMesh);
 
-    const light = new Light(gl, 0,1,0);
-    scene.addObject(light);
-
     const objLoader = new ObjLoader();
-    objLoader.load(gl,'../assets/teapot.obj').then((obj) => {
-        obj.position = [0, 2, 0];
+    objLoader.load(gl, '../assets/teapot.obj').then((obj) => {
+        obj.position = [-1, 1, -3];
         obj.scale = [0.025, 0.025, 0.025];
         scene.addObject(obj);
     });
@@ -59,16 +73,39 @@ function main() {
     const sphereMaterial = new MeshSpecularMaterial(gl);
     sphereMaterial.color = [1, 1, 1, 1];
     const sphereMesh = new Mesh(gl, sphere, sphereMaterial);
-    sphereMesh.position = [0, 1, -3];
+    sphereMesh.position = [0, 1, 3];
     scene.addObject(sphereMesh);
 
     const torus = create_torus_geometory(gl, 1, 0.4, 16, 12);
     const torusMaterial = new MeshSpecularMaterial(gl);
     torusMaterial.color = [1, 1, 1, 1]; // 白色に設定
     const torusMesh = new Mesh(gl, torus, torusMaterial);
-    torusMesh.position = [5, 1, 0];
+    torusMesh.position = [3, 0.5, 0];
     torusMesh.rotateX(Math.PI / 2);
     scene.addObject(torusMesh);
+
+    const dl = new Light(gl, 1,0,0);
+    scene.addObject(dl);
+
+
+    class LightAnimator extends Animator {
+        constructor() {
+            super();
+            this.angle = 0;
+        }
+        update(obj, deltaTime) {
+            // ライトを上下に移動
+            const radius =5;
+            this.angle += ((Math.PI * 2) / 18) * deltaTime;
+            obj.position[0] = 0;
+            obj.position[1] = radius * Math.sin(this.angle);;
+            obj.position[2] = 0;
+        }
+    }
+
+
+    const light = new PointLight(gl, { animator: new LightAnimator() });
+    scene.addObject(light);
 
     class CameraAnimator extends Animator {
         constructor() {
@@ -87,9 +124,9 @@ function main() {
             obj.lookAt([0, 1.5, 0]);
         }
     }
-    
-    const camera = new PerspectiveCamera(Math.PI / 2, canvas.width / canvas.height, 0.1, 100, {animator: new CameraAnimator()});
-    camera.position = [0, 0, 3];
+
+    const camera = new PerspectiveCamera(Math.PI / 2, canvas.width / canvas.height, 0.1, 100, {});
+    camera.position = [4, 4, 4];
     camera.lookAt([0, 0, 0]);
     scene.addObject(camera);
 

@@ -27,11 +27,15 @@ export class Renderer {
             isFog: true,
         };
 
+        this.clearColor = [0.0, 0.0, 0.0, 1.0];
+
+        this.usePointLight = true;
+
     }
 
     getDirectionLightDir(gl, scene) {
-
-        const lightsDir = scene.lights.reduce( ( acc, light) => vec3.add(acc, light.direction), [0,0,0]);
+        const directionalLights = scene.lights.filter( light => light. lightKind === "directional" );
+        const lightsDir = directionalLights.reduce( ( acc, light) => vec3.add(acc, light.direction), [0,0,0]);
         return vec3.normalize(lightsDir);
     }
 
@@ -80,7 +84,7 @@ export class Renderer {
         gl.depthFunc(gl.LESS);
 
 
-        gl.clearColor(0, 0, 0, 1);
+        gl.clearColor(...this.clearColor);
         gl.clearDepth(1.0); // Zバッファのクリア値を1.0（最も遠い）に設定
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
@@ -111,23 +115,28 @@ export class Renderer {
                 });
             }
 
+            const directionalLightDir = this.getDirectionLightDir(gl, scene);
+            const pointLights = scene.getPointLights();
 
             culled.forEach((obj) => {
                 obj.updateMatrix(camera.projMtx, camera.mdlViewMtx, this.vpMtx);
                 Renderer.renderContext = {
+                    // カメラ
                     viewMatrix: camera.mdlViewMtx,
                     projectionMatrix: camera.projMtx,
+
+                    //obj行列
                     viewProjectionMatrix: this.vpMtx,
                     modelViewProjection: obj.mvpMtx,
                     normalMatrix: obj.normalMtx,
                     modelMatrix: obj.worldMtx,
+
+                    // マテリアル
                     color: obj.material ? obj.material.color : Renderer.defaultColor,
                     textures: obj.material ? obj.material.textures : null,
                     wireFrame: obj.material ? obj.material.isWireframe : false,
                     useTexture: obj.material ? obj.material.useTexture : false,
                     size: obj.material ? obj.material.size : false,
-                    directionalLightDir: this.getDirectionLightDir(gl, scene),
-                    directionalLightColor: scene.lights.length > 0 ? scene.lights[0].color : [1,1,1],
                     uCubeMap: 0,
                     fogColor: scene.fogColor, // フォグの色
                     fogStart: scene.fogStart, // フォグが始まる距離
@@ -135,8 +144,19 @@ export class Renderer {
                     cameraPos: camera.position, // 追加：カメラのワールド座標
                     shininess: 32.0, // 追加：鏡面反射の鋭さ
                     alphaScale: 1.0, // 追加：アルファスケール
-                }
 
+                    // 平行光源の情報
+                    directionalLightDir: directionalLightDir,
+                    directionalLightColor: scene.lights.length > 0 ? scene.lights[0].color : [1,1,1],
+
+                    // 点光源の情報
+                    usePointLight: this.usePointLight && pointLights.length > 0 ? 1 : 0,
+                    pointLightPosition: pointLights.length > 0 ? pointLights[0].position : [0, 10, 0], // 点光源の位置
+                    pointLightColor: pointLights.length > 0 ? pointLights[0].color : [1, 1, 1], // 点光源の色
+                    constant: pointLights.length > 0 ? pointLights[0].constant : 1.0, // 減衰係数（定数項）
+                    linear: pointLights.length > 0 ? pointLights[0].linear : 0.001, // 減衰係数（一次項）
+                    quadratic: pointLights.length > 0 ? pointLights[0].quadratic : 0, // 減衰係数（二次項）
+                }
                 if( obj.type == 'mesh' ){
                     const shader = ShaderManager.shader( obj.material.shaderName );
                     shader.render(this.gl, Renderer.renderContext, obj.geometry)

@@ -38,6 +38,7 @@ class Scene {
         this.objGroups[options.layer].addObject(obj);
 
         if(obj.type === 'light'){
+            console.log("Add light:", obj);
             this.lights.push(obj);
         }
     }
@@ -48,6 +49,10 @@ class Scene {
                 obj.updateFrame(deltaTime);
             });
         });
+    }
+
+    getPointLights() {
+        return this.lights.filter(light => light.lightKind === "point");
     }
 }
 
