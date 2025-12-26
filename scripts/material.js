@@ -10,6 +10,12 @@ class Material {
         this.specular = materialContext.specular || false;
         this.useTexture = materialContext.useTexture || false;
     }
+
+    dispose(gl) {
+        if (this.textures) {
+            gl.deleteTexture(this.textures);
+        }
+    }
 }
 
 class MeshSimpleMaterial extends Material {

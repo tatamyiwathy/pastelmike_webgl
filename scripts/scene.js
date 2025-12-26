@@ -14,6 +14,12 @@ class ObjGroup extends Object3d {
 
     // Object3d.add()
     // add(){}
+
+    dispose(gl) {
+        this.children.forEach((obj) => {
+            obj.dispose(gl);
+        });
+    }
 }
 
 class Scene extends Object3d {
@@ -59,6 +65,12 @@ class Scene extends Object3d {
 
     getPointLights() {
         return this.lights.filter(light => light.lightKind === "point");
+    }
+
+    dispose(gl) {
+        this.children.forEach((group) => {
+            group.dispose(gl);
+        });
     }
 }
 

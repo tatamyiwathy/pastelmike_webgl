@@ -8,6 +8,15 @@ class Mesh extends Object3d {
         this.material = material;
         this.isRenderTarget = true;
     }
+
+    dispose(gl) {
+        if (this.geometry) {
+            this.geometry.dispose(gl);
+        }
+        if (this.material) {
+            this.material.dispose(gl);
+        }
+    }
 }
 
 export { Mesh };
