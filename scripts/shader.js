@@ -171,7 +171,7 @@ const fragmentShaderSource = `
             // 頂点シェーダーから渡されたUV座標をそのまま使う
             combinedColor = texture(samples, v_texcoord).rgb;
         } else {
-            combinedColor = diffuseD + diffuseP + specularColor;
+            combinedColor = (diffuseD + diffuseP + specularColor) * color.rgb;
         }
 
         outColor = vec4(combinedColor, color.a);
