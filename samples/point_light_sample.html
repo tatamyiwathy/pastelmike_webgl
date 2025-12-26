@@ -69,20 +69,49 @@
             display: none;
         }
     </style>
+
+    <!-- スライダー -->
+    <style>
+        input[type="range"] {
+            width: 300px;
+            accent-color: #4caf50;
+            /* 線やつまみの色（モダンブラウザ） */
+        }
+    </style>
 </head>
 
 <body>
+    <div>
+        定数減衰：
+        <!-- スライダー本体 -->
+        <input type="range" id="constant_slider" min="0" max="1" step="0.01" value="0.5">
 
+        <!-- スライダーの値を表示 -->
+        <span id="constant_slider_value">0.5</span>
+    </div>
+
+    <div>
+        線形減衰：
+        <!-- スライダー本体 -->
+        <input type="range" id="linear_slider" min="0" max="1" step="0.01" value="0.0">
+
+        <!-- スライダーの値を表示 -->
+        <span id="linear_slider_value">0.0</span>
+    </div>
+
+    <div>
+        二次減衰：
+        <!-- スライダー本体 -->
+        <input type="range" id="quadratic_slider" min="0" max="1" step="0.01" value="0.0">
+
+        <!-- スライダーの値を表示 -->
+        <span id="quadratic_slider_value">0.0</span>
+    </div>
 
     <canvas id="canvas" width="800" height="600"></canvas>
 
 
-    <div style="position: absolute; top: 50px; left: 50px;">
-        <label class="" , id="fog_switch">
-            <input type="checkbox" />
-        </label>フォグ ON/OFF
-    </div>
-
+    
     <script src="https://cdn.jsdelivr.net/npm/gl-matrix@3.4.3/gl-matrix-min.js"></script>
     <script type="module" src="./point_light_sample.js">
     </script>
