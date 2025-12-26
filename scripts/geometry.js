@@ -8,6 +8,10 @@ class VBO {
         gl.bindBuffer(gl.ARRAY_BUFFER, this.buffer);
         gl.bufferData(gl.ARRAY_BUFFER, array, gl.STATIC_DRAW);
     }
+
+    dispose(gl) {
+        gl.deleteBuffer(this.buffer);
+    }
 }
 
 class IBO {
@@ -19,6 +23,9 @@ class IBO {
         this.buffer = gl.createBuffer();
         gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.buffer);
         gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, array, gl.STATIC_DRAW);
+    }
+    dispose(gl) {
+        gl.deleteBuffer(this.buffer);
     }
 }
 
@@ -32,6 +39,25 @@ class Geometry {
         this.wire_ibo = indices ? new IBO(gl, this.generateIndexForWireframe(indices)) : null;
         this.wire_indices_len = this.wireIndices ? this.wireIndices.length : 0;
     }
+
+    dispose(gl) {
+        if (this.v_vbo) {
+            this.v_vbo.dispose(gl);
+        }
+        if (this.n_vbo) {
+            this.n_vbo.dispose(gl);
+        }
+        if (this.uv_vbo) {
+            this.uv_vbo.dispose(gl);
+        }
+        if (this.tri_ibo) {
+            this.tri_ibo.dispose(gl);
+        }
+        if (this.wire_ibo) {
+            this.wire_ibo.dispose(gl);
+        }
+    }
+    
     generateIndexForWireframe(indices) {
         if (!indices) {
             return null;
