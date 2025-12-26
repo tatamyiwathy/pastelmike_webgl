@@ -19,7 +19,7 @@ function main() {
     const material = new MeshSimpleMaterial(gl); 
     const plainMesh = new Mesh(gl, geometry, material);
     plainMesh.material.color = [0.5, 0.5, 0.5, 1]; // グレーに設定
-    scene.addObject(plainMesh);
+    scene.add(plainMesh);
 
 
 
@@ -34,7 +34,7 @@ function main() {
     };
 
     const skybox = new Skybox(gl, 15, skyboxImages);
-    scene.addObject(skybox, {layer: 0} );
+    scene.add(skybox, {layer: 0} );
 
 
     class CameraAnimator extends Animator {
@@ -58,7 +58,7 @@ function main() {
     const camera = new PerspectiveCamera(Math.PI / 2, canvas.width / canvas.height, 0.1, 100, {animator: new CameraAnimator()});
     camera.position = [0, 0, 3];
     camera.lookAt([0, 0, 0]);
-    scene.addObject(camera);
+    scene.add(camera);
 
     function render() {
         renderer.render(scene, camera);

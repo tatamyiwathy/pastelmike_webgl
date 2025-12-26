@@ -14,11 +14,11 @@ function main() {
     const scene = new Scene();
 
     const light = new DirectionLight(gl, 0,1,0);
-    scene.addObject(light);
+    scene.add(light);
 
     const objLoader = new ObjLoader();
     objLoader.load(gl,'../assets/cube2.obj').then((obj) => {
-        scene.addObject(obj);
+        scene.add(obj);
     });
 
     class CameraAnimator extends Animator {
@@ -42,7 +42,7 @@ function main() {
     const camera = new PerspectiveCamera(Math.PI / 5, canvas.width / canvas.height, 0.1, 100, {animator: new CameraAnimator()});
     camera.position = [0, 1.5, 10];
     camera.lookAt([0, 1.5, 0]);
-    scene.addObject(camera);
+    scene.add(camera);
     renderer.enableCulling = false;
     function render() {
         renderer.render(scene, camera);

@@ -75,19 +75,19 @@ function main() {
     const cube_mesh = new Mesh(gl, cube_geometry, cube_material);
     cube_mesh.position = [2, 1, 0];
     cube_mesh.material.color = [1, 1, 1, 1];
-    scene.addObject(cube_mesh);
+    scene.add(cube_mesh);
 
     {
         const light = new DirectionLight(gl, -1, 0, 0);
         light.color = [1, 1, 1]; // 白色光源
-        scene.addObject(light);
+        scene.add(light);
     }
 
     const plain_geometry = create_plain_geometry(gl, 50);
     const plain_material = new MeshSpecularMaterial(gl);
     const plain_mesh = new Mesh(gl, plain_geometry, plain_material);
     plain_mesh.material.color = [1, 1, 1, 1]; // 白に設定
-    scene.addObject(plain_mesh);
+    scene.add(plain_mesh);
 
 
     // キューブマップの画像情報
@@ -102,7 +102,7 @@ function main() {
 
     const skybox = new Skybox(gl, 15, skyboxImages);
     console.log('skybox', skybox);
-    scene.addObject(skybox, { layer: 0 });
+    scene.add(skybox, { layer: 0 });
 
 
     for (let i = 0; i < 1000; i++) {
@@ -114,7 +114,7 @@ function main() {
         mesh.position = [Math.random() * 20 - 10, Math.random() * 20 - 10, Math.random() * 20 - 10];
         mesh.rotateY(Math.random() * Math.PI * 2);
         mesh.material.color = pickColor(Math.random() * Math.PI * 2);
-        scene.addObject(mesh);
+        scene.add(mesh);
     }
 
 
@@ -166,7 +166,7 @@ function main() {
     const camera = new PerspectiveCamera(Math.PI / 2, canvas.width / canvas.height, 0.1, 100, {});
     camera.position = [0, 1.5, 3];
     camera.look([0, 0, 1]);
-    scene.addObject(camera);
+    scene.add(camera);
 
     function render() {
 
