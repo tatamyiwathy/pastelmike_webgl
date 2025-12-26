@@ -1,5 +1,5 @@
 import { Renderer } from '../scripts/renderer.js';
-import { Light } from '../scripts/light.js';
+import { DirectionLight } from '../scripts/light.js';
 import { Scene } from '../scripts/scene.js';
 import { PerspectiveCamera } from '../scripts/camera.js';
 import {
@@ -78,7 +78,7 @@ function main() {
     scene.addObject(cube_mesh);
 
     {
-        const light = new Light(gl, -1, 0, 0);
+        const light = new DirectionLight(gl, -1, 0, 0);
         light.color = [1, 1, 1]; // 白色光源
         scene.addObject(light);
     }

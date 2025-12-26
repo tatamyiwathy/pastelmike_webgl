@@ -1,8 +1,7 @@
 import { Object3d } from './object_3d.js';
-import { vec3 } from './math_utils.js';
 
 
-class Light extends Object3d {
+class DirectionLight extends Object3d {
     constructor(gl, x, y, z) {
         super('light');
         this.direction = [x,y,z]
@@ -26,4 +25,4 @@ class PointLight extends Object3d{
         this.quadratic = args.quadratic || 0; // 減衰係数（二次項）
     }
 }
-export { Light, PointLight };
+export { DirectionLight, PointLight };

@@ -1,9 +1,11 @@
 import { Renderer } from '../scripts/renderer.js';
-import { Plain } from '../scripts/plain.js';
 import { Scene } from '../scripts/scene.js';
 import { PerspectiveCamera } from '../scripts/camera.js';
 import { Skybox } from '../scripts/skybox.js';
 import { Animator } from '../scripts/object_3d.js';
+import { Mesh } from '../scripts/mesh.js';
+import { create_plain_geometry } from '../scripts/geometry.js';
+import { MeshSimpleMaterial } from '../scripts/material.js';
 
 function main() {
     const canvas = document.getElementById('canvas');
@@ -13,7 +15,9 @@ function main() {
 
     const scene = new Scene();
 
-    const plainMesh = new Plain(gl, { size: 50 });
+    const geometry = create_plain_geometry(gl, { size: 50 });
+    const material = new MeshSimpleMaterial(gl); 
+    const plainMesh = new Mesh(gl, geometry, material);
     plainMesh.material.color = [0.5, 0.5, 0.5, 1]; // グレーに設定
     scene.addObject(plainMesh);
 

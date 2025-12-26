@@ -1,5 +1,5 @@
 import { Renderer } from '../scripts/renderer.js';
-import { Light } from '../scripts/light.js';
+import { DirectionLight } from '../scripts/light.js';
 import { Scene } from '../scripts/scene.js';
 import { PerspectiveCamera } from '../scripts/camera.js';
 import {
@@ -42,7 +42,7 @@ function main() {
     sphere_mesh2.material.color = [1, 1, 1, 1];
     scene.addObject(sphere_mesh2);
 
-    const light = new Light(gl, -1, 0, 0);
+    const light = new DirectionLight(gl, -1, 0, 0);
     scene.addObject(light);
 
     const camera = new PerspectiveCamera(Math.PI / 2, canvas.width / canvas.height, 0.1, 100, {});

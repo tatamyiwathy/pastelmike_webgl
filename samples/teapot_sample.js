@@ -5,7 +5,7 @@ import { Mesh } from '../scripts/mesh.js';
 import { Animator } from '../scripts/object_3d.js';
 import { MeshSpecularMaterial, MeshSimpleMaterial } from '../scripts/material.js';
 import { create_plain_geometry } from '../scripts/geometry.js';
-import { PointLight, Light } from '../scripts/light.js';
+import { PointLight, DirectionLight } from '../scripts/light.js';
 import { ObjLoader } from '../scripts/obj_loader.js';
 import { create_torus_geometory, create_sphere_geometry } from '../scripts/geometry.js';
 
@@ -84,7 +84,7 @@ function main() {
     torusMesh.rotateX(Math.PI / 2);
     scene.addObject(torusMesh);
 
-    const dl = new Light(gl, 1,0,0);
+    const dl = new DirectionLight(gl, 1,0,0);
     scene.addObject(dl);
 
 

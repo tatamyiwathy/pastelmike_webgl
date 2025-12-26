@@ -1,16 +1,8 @@
 import { Renderer } from '../scripts/renderer.js';
-import { Plain } from '../scripts/plain.js';
 import { Scene } from '../scripts/scene.js';
 import { PerspectiveCamera } from '../scripts/camera.js';
-import { Mesh } from '../scripts/mesh.js';
 import { Animator } from '../scripts/object_3d.js';
-import { Material, MeshSpecularMaterial, MeshSimpleMaterial } from '../scripts/material.js';
-import { parseObj } from '../scripts/obj_parser.js';
-import { parseMtl } from '../scripts/mtl_parser.js';
-import { Geometry } from '../scripts/geometry.js';
-import { Light } from '../scripts/light.js';
-import { TextureLoader } from '../scripts/texture.js';
-import { ShaderName } from '../scripts/shader.js';
+import { DirectionLight } from '../scripts/light.js';
 import { ObjLoader } from '../scripts/obj_loader.js';
 
 function main() {
@@ -21,7 +13,7 @@ function main() {
 
     const scene = new Scene();
 
-    const light = new Light(gl, 0,1,0);
+    const light = new DirectionLight(gl, 0,1,0);
     scene.addObject(light);
 
     const objLoader = new ObjLoader();
