@@ -1,20 +1,12 @@
 import { Renderer } from '../scripts/renderer.js';
-import { DirectionLight } from '../scripts/light.js';
+import { PointLight } from '../scripts/light.js';
 import { Scene } from '../scripts/scene.js';
 import { PerspectiveCamera } from '../scripts/camera.js';
 import {
-    create_cube_geometry,
-    create_plain_geometry,
     create_sphere_geometry,
-    create_triangle_geometry,
 } from '../scripts/geometry.js';
-import { Skybox } from '../scripts/skybox.js';
-import { Animator } from '../scripts/object_3d.js';
-import { pickColor } from '../scripts/utils.js';
-import { parseObj } from '../scripts/obj_parser.js';
 import { MeshSpecularMaterial, MeshSimpleMaterial } from '../scripts/material.js';
 import { Mesh } from '../scripts/mesh.js';
-import { create_torus_geometory } from '../scripts/geometry.js';
 
 function main() {
     const canvas = document.getElementById('canvas');
@@ -32,6 +24,7 @@ function main() {
 
     const sphere_geometry = new create_sphere_geometry(gl);
     const sphere_material = new MeshSpecularMaterial(gl);
+
     const sphere_mesh1 = new Mesh(gl, sphere_geometry, sphere_material);
     sphere_mesh1.position = [2, 0, 0];
     sphere_mesh1.material.color = [1, 1, 1, 1];
@@ -42,7 +35,7 @@ function main() {
     sphere_mesh2.material.color = [1, 1, 1, 1];
     scene.addObject(sphere_mesh2);
 
-    const light = new DirectionLight(gl, -1, 0, 0);
+    const light = new PointLight(gl);
     scene.addObject(light);
 
     const camera = new PerspectiveCamera(Math.PI / 2, canvas.width / canvas.height, 0.1, 100, {});
