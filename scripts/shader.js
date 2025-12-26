@@ -1,4 +1,5 @@
 import { variable_validation } from "./utils.js";
+import { Material } from "./material.js";
 
 const ShaderName = {
     BASIC: 'basic',
@@ -364,6 +365,11 @@ class SimpleTextureShader extends ShaderProgram {
 
     render(gl, renderContext, geometry) {
         this.useProgram(gl);
+
+        if (renderContext.blendMode !== Material.BlendMode.NONE) {
+            gl.enable(gl.BLEND);
+            gl.blendFunc(gl.SRC_ALPHA, gl.ONE);
+        }
 
         gl.bindBuffer(gl.ARRAY_BUFFER, geometry.v_vbo.buffer);
         gl.enableVertexAttribArray(this.positionLocation);

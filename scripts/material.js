@@ -1,7 +1,13 @@
-import { ShaderManager } from "./shader.js";
 import { ShaderName } from "./shader.js";
 
 class Material {
+    static BlendMode = {
+        NONE: 0,
+        ALPHA: 1,
+        ADD: 2,
+        MULTIPLY: 3
+
+    }
     constructor(materialContext = {}) {
         this.shaderName = materialContext.shaderName || ''
         this.color = [1.0, 1.0, 1.0, 1.0];
@@ -9,6 +15,7 @@ class Material {
         this.textures = materialContext.textures || null;
         this.specular = materialContext.specular || false;
         this.useTexture = materialContext.useTexture || false;
+        this.blendMode = materialContext.blendMode || null; //アルファブレンド 加算 乗算
     }
 
     dispose(gl) {

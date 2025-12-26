@@ -8,7 +8,8 @@ import {
 } from '../scripts/geometry.js';
 import { MeshSpecularMaterial, MeshSimpleMaterial } from '../scripts/material.js';
 import { Mesh } from '../scripts/mesh.js';
-
+import { TextureLoader } from '../scripts/texture.js';
+import { Sprite } from '../scripts/flare.js';
 
 function main() {
     const canvas = document.getElementById('canvas');
@@ -76,8 +77,6 @@ function main() {
     const plainMesh = new Mesh(gl, plainGeometry, plainMaterial);
     plainMesh.position = [0, -2, 0];
     scene.add(plainMesh);
-
-
 
     function render() {
         light.constant = pointLightParameters.constant;

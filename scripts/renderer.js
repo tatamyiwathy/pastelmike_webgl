@@ -3,6 +3,7 @@ import { ObjGroup } from './scene.js';
 import { Frustum } from './frustum.js';
 import { Clock } from './clock.js';
 import { vec3 } from './math_utils.js';
+import { Material } from './material.js';
 
 export class Renderer {
     constructor(canvas) {
@@ -144,6 +145,7 @@ export class Renderer {
                     cameraPos: camera.position, // 追加：カメラのワールド座標
                     shininess: 32.0, // 追加：鏡面反射の鋭さ
                     alphaScale: 1.0, // 追加：アルファスケール
+                    blendMode: obj.material ? obj.material.blendMode : Material.BlendMode.NONE,
 
                     // 平行光源の情報
                     directionalLightDir: directionalLightDir,
