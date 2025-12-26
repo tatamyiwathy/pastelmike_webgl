@@ -60,13 +60,13 @@ function main() {
     const plain_material = new MeshSimpleMaterial(gl);
     const plainMesh = new Mesh(gl, plain_geometry, plain_material);
     plainMesh.material.color = [0.5, 0.5, 0.5, 1]; // グレーに設定
-    scene.addObject(plainMesh);
+    scene.add(plainMesh);
 
     const objLoader = new ObjLoader();
     objLoader.load(gl, '../assets/teapot.obj').then((obj) => {
         obj.position = [-1, 1, -3];
         obj.scale = [0.025, 0.025, 0.025];
-        scene.addObject(obj);
+        scene.add(obj);
     });
 
     const sphere = create_sphere_geometry(gl, 1, 16, 8);
@@ -74,7 +74,7 @@ function main() {
     sphereMaterial.color = [1, 1, 1, 1];
     const sphereMesh = new Mesh(gl, sphere, sphereMaterial);
     sphereMesh.position = [0, 1, 3];
-    scene.addObject(sphereMesh);
+    scene.add(sphereMesh);
 
     const torus = create_torus_geometory(gl, 1, 0.4, 16, 12);
     const torusMaterial = new MeshSpecularMaterial(gl);
@@ -82,11 +82,12 @@ function main() {
     const torusMesh = new Mesh(gl, torus, torusMaterial);
     torusMesh.position = [3, 0.5, 0];
     torusMesh.rotateX(Math.PI / 2);
-    scene.addObject(torusMesh);
+    scene.add(torusMesh);
 
     const dl = new DirectionLight(gl, 1,0,0);
-    scene.addObject(dl);
+    scene.add(dl);
 
+    
 
     class LightAnimator extends Animator {
         constructor() {
@@ -105,7 +106,7 @@ function main() {
 
 
     const light = new PointLight(gl, { animator: new LightAnimator() });
-    scene.addObject(light);
+    scene.add(light);
 
     class CameraAnimator extends Animator {
         constructor() {
@@ -128,7 +129,7 @@ function main() {
     const camera = new PerspectiveCamera(Math.PI / 2, canvas.width / canvas.height, 0.1, 100, {});
     camera.position = [4, 4, 4];
     camera.lookAt([0, 0, 0]);
-    scene.addObject(camera);
+    scene.add(camera);
 
     function render() {
         renderer.render(scene, camera);

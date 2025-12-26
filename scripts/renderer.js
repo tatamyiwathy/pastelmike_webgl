@@ -62,8 +62,9 @@ export class Renderer {
         if( this.readyShader == false ) {
             this.shaderContext.isFog = scene.isFog ? true : false;
             console.log("Shader isFog:", this.shaderContext.isFog);
-            scene.objGroups.forEach((group) => {
-                group.objects.forEach((obj) => {
+
+            scene.children.forEach((group) => {
+                group.children.forEach((obj) => {
                     this.shaderContext.isSpecular = obj.material && obj.material.specular ? true : false;
                 });
             });
@@ -95,11 +96,10 @@ export class Renderer {
         this.frustum.extractPlanes(this.vpMtx);
 
 
-        scene.objGroups.forEach((group) => {
+        scene.children.forEach((group) => {
 
             // カリング
-            const culled = this.enableCulling ? this.frustumCulling(group.objects) : group.objects;
-
+            const culled = this.enableCulling ? this.frustumCulling(group.children) : group.children;
 
 
             if( group.sortOrder == ObjGroup.SortOrderKind.DESC ) {

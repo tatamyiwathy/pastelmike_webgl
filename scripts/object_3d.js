@@ -14,25 +14,27 @@ class Animator {
 
 class Object3d {
     constructor(type = '', options = {}) {
+        this.type = type;   //
+
         this.position = new Float32Array([0, 0, 0]);
         this.rotation = new Float32Array([0, 0, 0]);
         this.scale = new Float32Array([1, 1, 1]);
         this.up = new Float32Array([0, 1, 0]);
         this.quaternion = glMatrix.quat.create();
-        this.clip = [0, 0, 0, 0];     // clip座標
+        this.clip = glMatrix.vec4.create(); // クリップ座標
 
         this.mvpMtx = glMatrix.mat4.create();
         this.normalMtx = glMatrix.mat4.create();
         this.worldMtx = glMatrix.mat4.create(); // モデル行列ともいう
 
-        this.type = type
         this.needsUpdateMatrix = true;
 
         this.animator = options.animator || null;
 
         this.isRenderTarget = false;
 
-        this.clip = glMatrix.vec4.create();
+        this.parent = null;
+        this.children = [];
     }
 
     updateFrame(deltaTime) { }
@@ -73,6 +75,10 @@ class Object3d {
             this.animator.update(this, deltaTime);
     }
 
+    add(child) {
+        child.parent = this;
+        this.children.push(child);
+    }
 }
 
 export { Object3d, Animator };

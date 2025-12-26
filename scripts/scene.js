@@ -1,4 +1,6 @@
-class ObjGroup {
+import { Object3d } from './object_3d.js';
+
+class ObjGroup extends Object3d {
     static SortOrderKind = {
         ASC: 1,
         NONE: 0,
@@ -6,24 +8,28 @@ class ObjGroup {
     };
 
     constructor() {
-        this.objects = [];
+        super("group");
         this.sortOrder = ObjGroup.SortOrderKind.ASC; 
     }
-    addObject(obj) {
-        this.objects.push(obj);
-    }
+
+    // Object3d.add()
+    // add(){}
 }
 
-class Scene {
-    objGroups = [];
+class Scene extends Object3d {
     lights = [];
 
     layers = 3;
     constructor() {
-        this.objGroups = Array.from({ length: this.layers }, () => new ObjGroup());
-        this.objGroups[0].sortOrder = ObjGroup.SortOrderKind.ASC;
-        this.objGroups[1].sortOrder = ObjGroup.SortOrderKind.ASC;
-        this.objGroups[2].sortOrder = ObjGroup.SortOrderKind.DESC;  // 透明オブジェクト用
+        super('scene');
+
+        for (let i = 0; i < this.layers; i++) {
+            super.add(new ObjGroup());
+        }
+
+        this.children[0].sortOrder = ObjGroup.SortOrderKind.ASC;
+        this.children[1].sortOrder = ObjGroup.SortOrderKind.ASC;
+        this.children[2].sortOrder = ObjGroup.SortOrderKind.DESC;  // 透明オブジェクト用
 
         this.isFog = false;
 
@@ -34,8 +40,8 @@ class Scene {
     }
 
 
-    addObject(obj, options = {layer: 1}) {
-        this.objGroups[options.layer].addObject(obj);
+    add(obj, options = {layer: 1}) {
+        this.children[options.layer].add(obj);
 
         if(obj.type === 'light'){
             console.log("Add light:", obj);
@@ -44,8 +50,8 @@ class Scene {
     }
 
     updateFrame(deltaTime) {
-        this.objGroups.forEach(group => {
-            group.objects.forEach(obj => {
+        this.children.forEach(group => {
+            group.children.forEach(obj => {
                 obj.updateFrame(deltaTime);
             });
         });
