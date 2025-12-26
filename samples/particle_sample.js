@@ -37,14 +37,14 @@ function main() {
         deltaY: 0
     };
 
-    canvas.addEventListener('mousedown', () => {
+    canvas.addEventListener('mousedown', (event) => {
         drugging.isDragging = true;
         drugging.fistX = event.clientX;
         drugging.fistY = event.clientY;
         drugging.lastX = event.clientX;
         drugging.lastY = event.clientY;
     });
-    canvas.addEventListener('mousemove', () => {
+    canvas.addEventListener('mousemove', (event) => {
         if (drugging.isDragging) {
             drugging.deltaX = drugging.lastX - event.clientX;
             drugging.deltaY = drugging.lastY - event.clientY;
@@ -52,7 +52,7 @@ function main() {
             drugging.lastY = event.clientY;
         }
     });
-    canvas.addEventListener('mouseup', () => {
+    canvas.addEventListener('mouseup', (event) => {
         drugging.isDragging = false;
         drugging.deltaX = 0;
         drugging.deltaY = 0;
@@ -92,20 +92,22 @@ function main() {
         mesh.animator = new ParticleAnimator();
 
         mesh.position = [x, y, z];
-        scene.addObject(mesh);
+        scene.add(mesh);
     }
 
     const camera = new PerspectiveCamera(Math.PI / 2, canvas.width / canvas.height, 0.1, 100, {});
     camera.position = [0, 10, 10];
     camera.lookAt([0, 0, 0]);
-    scene.addObject(camera);
+    scene.add(camera);
 
     let lookat_x = 0;
     let lookat_y = 0;
 
     function render() {
         lookat_x += drugging.deltaX * 0.01;
-        lookat_y += drugging.deltaY * 0.01;
+        lookat_y -= drugging.deltaY * 0.01;
+        drugging.deltaX = 0;
+        drugging.deltaY = 0;
         camera.lookAt([lookat_x, lookat_y, 0]);
         renderer.render(scene, camera);
         requestAnimationFrame(render);
