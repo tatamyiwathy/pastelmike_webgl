@@ -18,6 +18,7 @@ function main() {
 
     const objLoader = new ObjLoader();
     objLoader.load(gl,'../assets/cube2.obj').then((obj) => {
+        obj.material.color[3] = 1;
         scene.add(obj);
     });
 

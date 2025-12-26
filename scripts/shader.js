@@ -169,16 +169,16 @@ const fragmentShaderSource = `
 #endif
 
         // 最終的な色の合成
-        vec3 combinedColor;
+        vec4 baseColor;
         if (useTexture) {
             // 頂点シェーダーから渡されたUV座標をそのまま使う
-            combinedColor = texture(samples, v_texcoord).rgb * color.rgb;
+            baseColor = texture(samples, v_texcoord) * color;
         } else {
-            combinedColor = (diffuseD + diffuseP + specularColor) * color.rgb;
+            baseColor = vec4(diffuseD + diffuseP + specularColor, 1.0) * color;
         }
-        combinedColor += ambientLightColor * color.rgb;
+        vec4 combinedColor = vec4(baseColor.rgb + (ambientLightColor * color.rgb), baseColor.a);
 
-        outColor = vec4(combinedColor, color.a);
+        outColor = combinedColor;
 
         // --- 3. フォグ (Fog) ---
 #ifdef USE_FOG
@@ -430,6 +430,10 @@ class BasicShader extends ShaderProgram {
 
     render(gl, renderContext, geometry) {
         this.useProgram(gl);
+
+        gl.enable(gl.BLEND);
+        gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+        // gl.depthMask(false);
 
         gl.bindBuffer(gl.ARRAY_BUFFER, geometry.v_vbo.buffer);
         gl.enableVertexAttribArray(this.positionLocation);
