@@ -156,6 +156,9 @@ export class Renderer {
                     constant: pointLights.length > 0 ? pointLights[0].constant : 1.0, // 減衰係数（定数項）
                     linear: pointLights.length > 0 ? pointLights[0].linear : 0.001, // 減衰係数（一次項）
                     quadratic: pointLights.length > 0 ? pointLights[0].quadratic : 0, // 減衰係数（二次項）
+
+                    // 環境光の色
+                    ambientLightColor: scene.ambientColor || [0.2, 0.2, 0.2],
                 }
                 if( obj.type == 'mesh' ){
                     const shader = ShaderManager.shader( obj.material.shaderName );

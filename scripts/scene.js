@@ -32,11 +32,11 @@ class Scene extends Object3d {
         this.children[2].sortOrder = ObjGroup.SortOrderKind.DESC;  // 透明オブジェクト用
 
         this.isFog = false;
-
         this.fogColor = [0.5, 0.5, 0.5, 0.0]; // フォグの色
         this.fogStart = 100.0; // フォグが始まる距離
         this.fogEnd = 100.0; // フォグが完全に不透明になる距離
 
+        this.ambientColor = [0.2, 0.2, 0.2]; // 環境光の色
     }
 
 

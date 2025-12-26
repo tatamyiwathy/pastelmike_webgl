@@ -126,6 +126,8 @@ const fragmentShaderSource = `
     // uniform vec3 viewPosition;     // カメラ位置 cameraPosで代用
     uniform float constant, linear, quadratic; // 減衰係数
     uniform bool usePointLight;
+    uniform vec3 ambientLightColor;
+
 
     in vec3 v_worldPosition;
     in vec3 v_normal;
@@ -169,10 +171,11 @@ const fragmentShaderSource = `
         vec3 combinedColor;
         if (useTexture) {
             // 頂点シェーダーから渡されたUV座標をそのまま使う
-            combinedColor = texture(samples, v_texcoord).rgb;
+            combinedColor = texture(samples, v_texcoord).rgb * color.rgb;
         } else {
             combinedColor = (diffuseD + diffuseP + specularColor) * color.rgb;
         }
+        combinedColor += ambientLightColor * color.rgb;
 
         outColor = vec4(combinedColor, color.a);
 
@@ -416,6 +419,7 @@ class BasicShader extends ShaderProgram {
         this.linearLocation = gl.getUniformLocation(this.program, 'linear'); // 減衰係数（一次項）
         this.quadraticLocation = gl.getUniformLocation(this.program, 'quadratic'); // 減衰係数（二次項）
         this.usePointLightLocation = gl.getUniformLocation(this.program, 'usePointLight');
+        this.ambientLightColorLocation = gl.getUniformLocation(this.program, 'ambientLightColor'); // 環境光の色
     }
 
     render(gl, renderContext, geometry) {
@@ -448,22 +452,30 @@ class BasicShader extends ShaderProgram {
         //gl.uniformMatrix4fv(this.viewProjectionMatrixLocation, false, renderContext.viewProjectionMatrix);
         gl.uniformMatrix4fv(this.viewMatrixLocation, false, renderContext.viewMatrix);
         //gl.uniformMatrix4fv(this.projectionMatrixLocation, false, renderContext.projectionMatrix);
-        gl.uniform4f(this.colorLocation, renderContext.color[0], renderContext.color[1], renderContext.color[2], renderContext.color[3]);
+        gl.uniform4f(this.colorLocation, ...renderContext.color);
         gl.uniform1i(this.useTextureLocation, renderContext.useTexture);
-        gl.uniform4f(this.fogColorLocation, ...renderContext.fogColor); // フォグの色
-        gl.uniform1f(this.fogStartLocation, renderContext.fogStart); // フォグが始まる距離
-        gl.uniform1f(this.fogEndLocation, renderContext.fogEnd); // フォグが完全に不透明になる距離
-        gl.uniform3f(this.directionalLightDirLocation, ...renderContext.directionalLightDir); // 平行光源
-        gl.uniform3f(this.directionalLightColorLocation, ...renderContext.directionalLightColor); // 白色光源
         gl.uniform3f(this.cameraPosLocation, ...renderContext.cameraPos); // 追加：カメラのワールド座標
         gl.uniform1f(this.shininessLocation, renderContext.shininess); // 追加：鏡面反射の鋭さ
 
+        // フォグ関連のユニフォーム変数を設定
+        gl.uniform4f(this.fogColorLocation, ...renderContext.fogColor); // フォグの色
+        gl.uniform1f(this.fogStartLocation, renderContext.fogStart); // フォグが始まる距離
+        gl.uniform1f(this.fogEndLocation, renderContext.fogEnd); // フォグが完全に不透明になる距離
+
+        // 平行光源関連のユニフォーム変数を設定
+        gl.uniform3f(this.directionalLightDirLocation, ...renderContext.directionalLightDir); // 平行光源
+        gl.uniform3f(this.directionalLightColorLocation, ...renderContext.directionalLightColor); // 白色光源
+
+        // 点光源関連のユニフォーム変数を設定
         gl.uniform3f(this.pointLightPositionLocation, ...renderContext.pointLightPosition); // 点光源の位置
         gl.uniform3f(this.pointLightColorLocation, ...renderContext.pointLightColor); // 点光源の色
         gl.uniform1f(this.constantLocation, renderContext.constant); // 減衰係数（定数項）
         gl.uniform1f(this.linearLocation, renderContext.linear); // 減衰係数（一次項）
         gl.uniform1f(this.quadraticLocation, renderContext.quadratic); // 減衰係数（二次項）
         gl.uniform1i(this.usePointLightLocation, renderContext.usePointLight); // 点光源の使用有無
+
+        // 環境光の設定
+        gl.uniform3f(this.ambientLightColorLocation, ...renderContext.ambientLightColor); // 環境光の色
 
         if (renderContext.wireFrame) {
             gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, geometry.wire_ibo.buffer);
