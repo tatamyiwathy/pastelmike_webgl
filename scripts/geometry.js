@@ -57,7 +57,7 @@ class Geometry {
             this.wire_ibo.dispose(gl);
         }
     }
-    
+
     generateIndexForWireframe(indices) {
         if (!indices) {
             return null;
@@ -181,7 +181,7 @@ function create_sphere_geometry(gl, radius = 1, sectors = 32, rings = 16) {
     return new Geometry(gl, new Float32Array(vertices), new Float32Array(normals), new Float32Array(vus), new Uint32Array(indices));
 }
 
-function createMeshData(vtx, nrm,  faces) {
+function createMeshData(vtx, nrm, faces) {
 
     const vary = [];
     const nary = [];
@@ -199,7 +199,7 @@ function createMeshData(vtx, nrm,  faces) {
         }
     }
 
-    const uvs = new Float32Array(0,0);
+    const uvs = new Float32Array(0, 0);
 
     return [new Float32Array(vary), new Float32Array(nary), uvs, new Uint32Array(iary)];
 }
