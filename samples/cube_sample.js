@@ -20,6 +20,8 @@ function main() {
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
 
+    const random = new Math.seedrandom('hello.');
+    console.log(random());
 
     const mouseState = {
         isMouseDown: false,
@@ -106,14 +108,14 @@ function main() {
 
 
     for (let i = 0; i < 1000; i++) {
-        const geometry = create_triangle_geometry(gl, Math.random() * 0.5 + 0.1);
+        const geometry = create_triangle_geometry(gl, random() * 0.5 + 0.1);
         const material = new MeshSpecularMaterial(gl);
         const mesh = new Mesh(gl, geometry, material);
 
 
-        mesh.position = [Math.random() * 20 - 10, Math.random() * 20 - 10, Math.random() * 20 - 10];
-        mesh.rotateY(Math.random() * Math.PI * 2);
-        mesh.material.color = pickColor(Math.random() * Math.PI * 2);
+        mesh.position = [random() * 20 - 10, random() * 20 - 10, random() * 20 - 10];
+        mesh.rotateY(random() * Math.PI * 2);
+        mesh.material.color = pickColor(random() * Math.PI * 2);
         scene.add(mesh);
     }
 

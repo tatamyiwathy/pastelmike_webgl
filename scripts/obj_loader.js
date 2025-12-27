@@ -18,7 +18,6 @@ class ObjLoader {
         if (obj[1].length > 0) {
             // MTLファイルの読み込み
             const mtl_url = dir + '/' + obj[1][0];
-            console.log("Loading MTL file from:", mtl_url);
             const mtl = await parseMtl(mtl_url);
             
             if(mtl.map_Kd) {

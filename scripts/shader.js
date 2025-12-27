@@ -431,7 +431,7 @@ class BasicShader extends ShaderProgram {
 
         gl.enable(gl.BLEND);
         gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
-        // gl.depthMask(false);
+        //gl.depthMask(true);
 
         gl.bindBuffer(gl.ARRAY_BUFFER, geometry.v_vbo.buffer);
         gl.enableVertexAttribArray(this.positionLocation);

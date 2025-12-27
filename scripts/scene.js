@@ -50,7 +50,6 @@ class Scene extends Object3d {
         this.children[options.layer].add(obj);
 
         if(obj.type === 'light'){
-            console.log("Add light:", obj);
             this.lights.push(obj);
         }
     }

@@ -13,7 +13,6 @@ function _parseMtl(text) {
         if( key === '#' || key === '' ){
             return;
         }
-        console.log('key:', key);
         if( isNumelic(tokens[0]) ){
             const values = tokens.map(parseFloat);
             materials[key] = values.length === 1 ? values[0] : values;
@@ -38,7 +37,6 @@ function _parseMtl(text) {
 }
 
 export async function parseMtl(url) {
-    console.log(`Loading MTL file from: ${url}`);
 
     const response = await fetch(url);
 
