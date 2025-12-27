@@ -137,7 +137,8 @@ export class Renderer {
                     textures: obj.material ? obj.material.textures : null,
                     wireFrame: obj.material ? obj.material.isWireframe : false,
                     useTexture: obj.material ? obj.material.useTexture : false,
-                    size: obj.material ? obj.material.size : false,
+                    particleSize: obj.material ? obj.material.particleSize : false,
+                    blendMode: obj.material ? obj.material.blendMode : Material.BlendMode.NONE,
                     uCubeMap: 0,
                     fogColor: scene.fogColor, // フォグの色
                     fogStart: scene.fogStart, // フォグが始まる距離
@@ -145,7 +146,6 @@ export class Renderer {
                     cameraPos: camera.position, // 追加：カメラのワールド座標
                     shininess: 32.0, // 追加：鏡面反射の鋭さ
                     alphaScale: 1.0, // 追加：アルファスケール
-                    blendMode: obj.material ? obj.material.blendMode : Material.BlendMode.NONE,
 
                     // 平行光源の情報
                     directionalLightDir: directionalLightDir,

@@ -66,7 +66,7 @@ function main() {
         const geometry = new PointGeometry(gl);
         const material = new ParticleMaterial(gl, {
             // color: pickColor( (Math.PI * 2) / 6  * Math.random() + ((Math.PI * 2)/3)*2),
-            size: 10.0
+            particleSize: 10.0
         });
 
         class ParticleAnimator extends Animator {

@@ -365,6 +365,7 @@ class SimpleTextureShader extends ShaderProgram {
         this.useProgram(gl);
 
         if (renderContext.blendMode !== Material.BlendMode.NONE) {
+            console.log('enable blend');
             gl.enable(gl.BLEND);
             gl.blendFunc(gl.SRC_ALPHA, gl.ONE);
         }
@@ -565,7 +566,7 @@ class ParticleShader extends ShaderProgram {
 
         variable_validation(geometry);
         variable_validation(renderContext.modelViewProjection);
-        variable_validation(renderContext.size);
+        variable_validation(renderContext.particleSize);
         variable_validation(renderContext.alphaScale);
         variable_validation(renderContext.color);
         //
@@ -581,7 +582,7 @@ class ParticleShader extends ShaderProgram {
         gl.vertexAttribPointer(this.positionLocation, 3, gl.FLOAT, false, 0, 0);
 
         gl.uniformMatrix4fv(this.mvpMatrixLocation, false, renderContext.modelViewProjection);
-        gl.uniform1f(this.pointSizeLocation, renderContext.size); // パーティクルサイズ
+        gl.uniform1f(this.pointSizeLocation, renderContext.particleSize); // パーティクルサイズ
         gl.uniform1f(this.alphaScaleLocation, renderContext.alphaScale); // currentAlphaValue は 0.0 から 1.0 までの値
         gl.uniform3f(this.particleColorLocation, ...renderContext.color); // 青色
         gl.drawArrays(gl.POINTS, 0, 1);

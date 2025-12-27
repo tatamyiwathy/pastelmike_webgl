@@ -4,6 +4,7 @@ import { PerspectiveCamera } from '../scripts/camera.js';
 import { Animator } from '../scripts/object_3d.js';
 import { DirectionLight } from '../scripts/light.js';
 import { ObjLoader } from '../scripts/obj_loader.js';
+import { ShaderName } from '../scripts/shader.js';
 
 function main() {
     const canvas = document.getElementById('canvas');
@@ -17,7 +18,8 @@ function main() {
     scene.add(light);
 
     const objLoader = new ObjLoader();
-    objLoader.load(gl,'../assets/sphere.obj').then((obj) => {
+    objLoader.load(gl,'../assets/cube2.obj').then((obj) => {
+        obj.material.shaderName = ShaderName.SIMPLETEX;
         obj.material.color[3] = 1;
         scene.add(obj);
     });

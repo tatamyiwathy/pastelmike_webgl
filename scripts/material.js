@@ -6,8 +6,8 @@ class Material {
         ALPHA: 1,
         ADD: 2,
         MULTIPLY: 3
-
     }
+
     constructor(materialContext = {}) {
         this.shaderName = materialContext.shaderName || ''
         this.color = [1.0, 1.0, 1.0, 1.0];
@@ -15,7 +15,7 @@ class Material {
         this.textures = materialContext.textures || null;
         this.specular = materialContext.specular || false;
         this.useTexture = materialContext.textures || false;
-        this.blendMode = materialContext.blendMode || null; //アルファブレンド 加算 乗算
+        this.blendMode = materialContext.blendMode || Material.BlendMode.NONE; //アルファブレンド 加算 乗算
     }
 
     dispose(gl) {
@@ -101,7 +101,7 @@ class ParticleMaterial extends Material {
     constructor(gl, options = {}) {
         super();
         this.shaderName = ShaderName.PARTICLE;
-        this.size = options.size || 50.0;
+        this.particleSize = options.particleSize || 50.0;
         this.alphaScale = options.alphaScale || 1.0;
         this.color = options.color || [1.0, 1.0, 1.0, 1.0];
     }
