@@ -1,4 +1,7 @@
 # copilot-instructions.md
+## プロジェクトに関して
+- このプロジェクトはWebGL2.0の学習を目的とした軽量な3Dレンダリングエンジンである。
+- 主にJavaScriptとGLSLで構成されている。
 
 ## ライブラリ
 - gl-matrix v3.4.3
