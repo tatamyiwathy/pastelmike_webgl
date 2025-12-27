@@ -10,6 +10,7 @@ import { MeshSpecularMaterial, MeshSimpleMaterial } from '../scripts/material.js
 import { Mesh } from '../scripts/mesh.js';
 import { TextureLoader } from '../scripts/texture.js';
 import { Sprite } from '../scripts/flare.js';
+import { Animator } from '../scripts/object_3d.js';
 
 function main() {
     const canvas = document.getElementById('canvas');
@@ -58,12 +59,25 @@ function main() {
     const sphere_material = new MeshSpecularMaterial(gl, materialContext);
     sphere_material.useTexture = true;
 
+
+    class SphereRotator extends Animator {
+        constructor() {
+          super();
+          this.angle = 0;
+        }
+        update(obj, deltaTime) {
+            this.angle += deltaTime * 0.001;
+            obj.rotateY(this.angle);
+        }
+    }
     const sphere_mesh1 = new Mesh(gl, sphere_geometry, sphere_material);
+    sphere_mesh1.animator = new SphereRotator();
     sphere_mesh1.position = [2, 0, 0];
     sphere_mesh1.material.color = [1, 1, 1, 1];
     scene.add(sphere_mesh1);
 
     const sphere_mesh2 = new Mesh(gl, sphere_geometry, sphere_material);
+    sphere_mesh2.animator = new SphereRotator();
     sphere_mesh2.position = [-2, 0, 0];
     sphere_mesh2.material.color = [1, 1, 1, 1];
     scene.add(sphere_mesh2);

@@ -6,8 +6,6 @@ class Animator {
         console.log('Animator created');
     }
     update(obj, deltaTime) {
-        console.log('Animator update', deltaTime);
-        console.log(obj.type);
     }
 }
 
