@@ -17,7 +17,7 @@ function main() {
     scene.add(light);
 
     const objLoader = new ObjLoader();
-    objLoader.load(gl,'../assets/cube2.obj').then((obj) => {
+    objLoader.load(gl,'../assets/sphere.obj').then((obj) => {
         obj.material.color[3] = 1;
         scene.add(obj);
     });

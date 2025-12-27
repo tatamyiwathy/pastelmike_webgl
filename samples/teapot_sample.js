@@ -35,10 +35,11 @@ function main() {
 
     setElementEvent('wireframe_switch', 'change', (event) => {
         const isWireframe = event.target.checked;
-        scene.objGroups.forEach((group) => {
-            group.objects.forEach((obj) => {
+        scene.children.forEach((group) => {
+            group.children.forEach((obj) => {
                 if (obj.material) {
                     obj.material.isWireframe = isWireframe;
+                    console.log('set wireframe:', isWireframe);
                 }
             });
         });
@@ -69,12 +70,17 @@ function main() {
         scene.add(obj);
     });
 
-    const sphere = create_sphere_geometry(gl, 1, 16, 8);
-    const sphereMaterial = new MeshSpecularMaterial(gl);
-    sphereMaterial.color = [1, 1, 1, 1];
-    const sphereMesh = new Mesh(gl, sphere, sphereMaterial);
-    sphereMesh.position = [0, 1, 3];
-    scene.add(sphereMesh);
+    // const sphere = create_sphere_geometry(gl, 1, 16, 8);
+    // const sphereMaterial = new MeshSpecularMaterial(gl);
+    // sphereMaterial.color = [1, 1, 1, 1];
+    // const sphereMesh = new Mesh(gl, sphere, sphereMaterial);
+    // sphereMesh.position = [0, 1, 3];
+    // scene.add(sphereMesh);
+    const loader = new ObjLoader();
+    loader.load(gl, '../assets/sphere.obj').then((obj) => {
+        obj.position = [0, 1, 3];
+        scene.add(obj);
+    });
 
     const torus = create_torus_geometory(gl, 1, 0.4, 16, 12);
     const torusMaterial = new MeshSpecularMaterial(gl);
