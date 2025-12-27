@@ -13,8 +13,8 @@ class Material {
         this.color = [1.0, 1.0, 1.0, 1.0];
         this.isWireframe = materialContext.isWireframe || false;
         this.textures = materialContext.textures || null;
+        this.useTexture = materialContext.useTexture || false;
         this.specular = materialContext.specular || false;
-        this.useTexture = materialContext.textures || false;
         this.blendMode = materialContext.blendMode || Material.BlendMode.NONE; //アルファブレンド 加算 乗算
     }
 

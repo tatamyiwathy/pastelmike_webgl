@@ -105,6 +105,7 @@ class PointGeometry extends Geometry {
 function create_torus_geometory(gl, radius = 1, tubeRadius = 0.4, radialSegments = 32, tubularSegments = 24) {
     const vertices = [];
     const normals = [];
+    const uvs = [];
     const indices = [];
 
 
@@ -117,6 +118,7 @@ function create_torus_geometory(gl, radius = 1, tubeRadius = 0.4, radialSegments
             const y = (radius + tubeRadius * Math.cos(v)) * Math.sin(u);
             const z = tubeRadius * Math.sin(v);
             vertices.push(x, y, z);
+            uvs.push(i / tubularSegments, j / radialSegments);
             const nx = Math.cos(v) * Math.cos(u);
             const ny = Math.cos(v) * Math.sin(u);
             const nz = Math.sin(v);
@@ -134,7 +136,8 @@ function create_torus_geometory(gl, radius = 1, tubeRadius = 0.4, radialSegments
             indices.push(b, c, d);
         }
     }
-    return new Geometry(gl, new Float32Array(vertices), new Float32Array(normals), null, new Uint32Array(indices));
+
+    return new Geometry(gl, new Float32Array(vertices), new Float32Array(normals), new Float32Array(uvs), new Uint32Array(indices));
 }
 
 function create_sphere_geometry(gl, radius = 1, sectors = 32, rings = 16) {
@@ -178,11 +181,11 @@ function create_sphere_geometry(gl, radius = 1, sectors = 32, rings = 16) {
     return new Geometry(gl, new Float32Array(vertices), new Float32Array(normals), new Float32Array(vus), new Uint32Array(indices));
 }
 
-function createMeshData(vtx, nrm, faces) {
+function createMeshData(vtx, nrm,  faces) {
 
-    const boxVertices = [];
-    const boxNormals = [];
-    const boxIndices = [];
+    const vary = [];
+    const nary = [];
+    const iary = [];
     let index = 0;
     for (let face of faces) {
         for (let i = 0; i < face.length; i++) {
@@ -190,15 +193,15 @@ function createMeshData(vtx, nrm, faces) {
             const ni = face[i][1] - 1;
             const v = vtx[vi];
             const n = nrm[ni];
-            boxVertices.push(v[0], v[1], v[2]);
-            boxNormals.push(n[0], n[1], n[2]);
-            boxIndices.push(index++);
+            vary.push(v[0], v[1], v[2]);
+            nary.push(n[0], n[1], n[2]);
+            iary.push(index++);
         }
     }
 
-    const uvs = new Float32Array();
+    const uvs = new Float32Array(0,0);
 
-    return [new Float32Array(boxVertices), new Float32Array(boxNormals), uvs, new Uint32Array(boxIndices)];
+    return [new Float32Array(vary), new Float32Array(nary), uvs, new Uint32Array(iary)];
 }
 
 function create_cube_geometry(gl, width, height, depth, inverted = false) {

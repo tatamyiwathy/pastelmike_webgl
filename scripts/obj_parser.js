@@ -117,6 +117,16 @@ function _parseObj(text) {
         }
     }
 
+    // UVデータがない場合の処理
+    if(uvs.length === 0){
+        uvs.push([0,0]);
+        for(let i=0; i<faces.length; i++){
+            const face = faces[i];
+            face[0].vt = 0;
+            face[1].vt = 0;
+            face[2].vt = 0;
+        }
+    }
     const obj = expandPerTriangle(vertices, normals, uvs, faces);
     return [ obj, mtllibs ];
 }

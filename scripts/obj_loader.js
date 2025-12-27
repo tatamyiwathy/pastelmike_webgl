@@ -12,7 +12,6 @@ class ObjLoader {
 
         // OBJファイルの読み込み
         const obj = await parseObj(url);
-        console.log("OBJ directory:", obj);
 
         let texture = null;
         if (obj[1].length > 0) {
@@ -37,12 +36,10 @@ class ObjLoader {
             specular: true,
             isWireframe: false,
             color: [1, 1, 1, 1] // 白色に設定
-
         });
         const mesh = new Mesh(gl, geometry, material);
         mesh.position = [0, 0, 0];
         mesh.scale = [1, 1, 1];
-
         return mesh;
     }
 }
