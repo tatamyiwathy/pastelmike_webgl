@@ -52,7 +52,11 @@ function main() {
 
 
     const sphere_geometry = new create_sphere_geometry(gl);
-    const sphere_material = new MeshSpecularMaterial(gl);
+    const textureLoader = new TextureLoader();
+    const texture = textureLoader.load(gl, '../assets/lroc_color_2k.jpg');
+    const materialContext = { textures: texture };
+    const sphere_material = new MeshSpecularMaterial(gl, materialContext);
+    sphere_material.useTexture = true;
 
     const sphere_mesh1 = new Mesh(gl, sphere_geometry, sphere_material);
     sphere_mesh1.position = [2, 0, 0];

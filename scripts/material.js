@@ -14,7 +14,7 @@ class Material {
         this.isWireframe = materialContext.isWireframe || false;
         this.textures = materialContext.textures || null;
         this.specular = materialContext.specular || false;
-        this.useTexture = materialContext.useTexture || false;
+        this.useTexture = materialContext.textures || false;
         this.blendMode = materialContext.blendMode || null; //アルファブレンド 加算 乗算
     }
 
@@ -33,8 +33,8 @@ class MeshSimpleMaterial extends Material {
 }
 
 class MeshSpecularMaterial extends Material {
-    constructor(gl, params = {}) {
-        super(params);
+    constructor(gl, materialContext) {
+        super(materialContext);
         this.shaderName = ShaderName.BASIC;
     }
 }
