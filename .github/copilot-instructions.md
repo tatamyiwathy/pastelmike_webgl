@@ -3,6 +3,7 @@
 ## ライブラリ
 - gl-matrix v3.4.3
 - QUnit v2.17.2
+- seedrandom v3.0.5
 
 ## テスト
 - テストフレームワークにはQUnitを使用する。
