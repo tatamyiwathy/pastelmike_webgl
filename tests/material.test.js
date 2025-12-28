@@ -1,22 +1,20 @@
-import { Material } from '../scripts/material.js';
-import { MeshSimpleMaterial } from '../scripts/material.js';
-import { MeshSpecularMaterial } from '../scripts/material.js';
-import { ParticleMaterial } from '../scripts/material.js';
+import { describe, test, expect } from 'vitest';
+import { Material, MeshSimpleMaterial, MeshSpecularMaterial, ParticleMaterial } from '../scripts/material.js';
 import { ShaderName } from '../scripts/shader.js';
 
-QUnit.module('Material', function() {
-    QUnit.test('Materialの初期値', function(assert) {
+describe('Material', () => {
+    test('Materialの初期値', () => {
         const m = new Material();
-        assert.strictEqual(m.shaderName, '', 'デフォルトのshaderNameは空文字');
-        assert.deepEqual(m.color, [1.0, 1.0, 1.0, 1.0], 'デフォルトのcolor');
-        assert.strictEqual(m.isWireframe, false, 'デフォルトのisWireframeはfalse');
-        assert.strictEqual(m.textures, null, 'デフォルトのtexturesはnull');
-        assert.strictEqual(m.useTexture, false, 'デフォルトのuseTextureはfalse');
-        assert.strictEqual(m.specular, false, 'デフォルトのspecularはfalse');
-        assert.strictEqual(m.blendMode, Material.BlendMode.NONE, 'デフォルトのblendMode');
+        expect(m.shaderName).toBe('');
+        expect(m.color).toEqual([1.0, 1.0, 1.0, 1.0]);
+        expect(m.isWireframe).toBe(false);
+        expect(m.textures).toBe(null);
+        expect(m.useTexture).toBe(false);
+        expect(m.specular).toBe(false);
+        expect(m.blendMode).toBe(Material.BlendMode.NONE);
     });
 
-    QUnit.test('Materialのプロパティ設定', function(assert) {
+    test('Materialのプロパティ設定', () => {
         const m = new Material({
             shaderName: 'test',
             isWireframe: true,
@@ -25,38 +23,38 @@ QUnit.module('Material', function() {
             specular: true,
             blendMode: Material.BlendMode.ADD
         });
-        assert.strictEqual(m.shaderName, 'test');
-        assert.strictEqual(m.isWireframe, true);
-        assert.strictEqual(m.textures, 'tex');
-        assert.strictEqual(m.useTexture, true);
-        assert.strictEqual(m.specular, true);
-        assert.strictEqual(m.blendMode, Material.BlendMode.ADD);
+        expect(m.shaderName).toBe('test');
+        expect(m.isWireframe).toBe(true);
+        expect(m.textures).toBe('tex');
+        expect(m.useTexture).toBe(true);
+        expect(m.specular).toBe(true);
+        expect(m.blendMode).toBe(Material.BlendMode.ADD);
     });
 });
 
-QUnit.module('MeshSimpleMaterial', function() {
-    QUnit.test('MeshSimpleMaterialの初期化', function(assert) {
+describe('MeshSimpleMaterial', () => {
+    test('MeshSimpleMaterialの初期化', () => {
         const gl = {};
         const mat = new MeshSimpleMaterial(gl);
-        assert.strictEqual(mat.shaderName, ShaderName.SIMPLE);
+        expect(mat.shaderName).toBe(ShaderName.SIMPLE);
     });
 });
 
-QUnit.module('MeshSpecularMaterial', function() {
-    QUnit.test('MeshSpecularMaterialの初期化', function(assert) {
+describe('MeshSpecularMaterial', () => {
+    test('MeshSpecularMaterialの初期化', () => {
         const gl = {};
         const mat = new MeshSpecularMaterial(gl, {});
-        assert.strictEqual(mat.shaderName, ShaderName.BASIC);
+        expect(mat.shaderName).toBe(ShaderName.BASIC);
     });
 });
 
-QUnit.module('ParticleMaterial', function() {
-    QUnit.test('ParticleMaterialの初期化', function(assert) {
+describe('ParticleMaterial', () => {
+    test('ParticleMaterialの初期化', () => {
         const gl = {};
         const mat = new ParticleMaterial(gl, { particleSize: 10, alphaScale: 0.5, color: [0.1,0.2,0.3,0.4] });
-        assert.strictEqual(mat.shaderName, ShaderName.PARTICLE);
-        assert.strictEqual(mat.particleSize, 10);
-        assert.strictEqual(mat.alphaScale, 0.5);
-        assert.deepEqual(mat.color, [0.1,0.2,0.3,0.4]);
+        expect(mat.shaderName).toBe(ShaderName.PARTICLE);
+        expect(mat.particleSize).toBe(10);
+        expect(mat.alphaScale).toBe(0.5);
+        expect(mat.color).toEqual([0.1,0.2,0.3,0.4]);
     });
 });

@@ -1,0 +1,30 @@
+{
+  "name": "pastelmike_webgl",
+  "version": "1.0.0",
+  "scripts": {
+    "test": "vitest"
+  },
+  "devDependencies": {
+    "jsdom": "^27.4.0",
+    "vitest": "^1.6.1"
+  },
+  "description": "A repository for learning WebGL",
+  "main": "vitest.config.js",
+  "directories": {
+    "test": "tests"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tatamyiwathy/pastelmike_webgl.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/tatamyiwathy/pastelmike_webgl/issues"
+  },
+  "homepage": "https://github.com/tatamyiwathy/pastelmike_webgl#readme",
+  "dependencies": {
+    "gl-matrix": "^3.4.4"
+  }
+}

@@ -1,0 +1,20 @@
+
+> pastelmike_webgl@1.0.0 test
+> vitest
+
+
+ DEV  v1.6.1 /app
+
+ ✓ tests/material.test.js  (5 tests) 3ms
+ ✓ tests/camera.test.js  (4 tests) 3ms
+ ✓ tests/hello.test.js  (1 test) 1ms
+ ✓ tests/renderer.test.js  (3 tests) 2ms
+
+ Test Files  4 passed (4)
+      Tests  13 passed (13)
+   Start at  07:20:11
+   Duration  7.71s (transform 162ms, setup 0ms, collect 717ms, tests 9ms, environment 18.34s, prepare 3.63s)
+
+
+ PASS  Waiting for file changes...
+       press h to show help, press q to quit

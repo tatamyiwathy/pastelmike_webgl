@@ -1,4 +1,5 @@
-import { mat4 } from './math_utils.js';
+
+import * as glMatrix from 'gl-matrix';
 
 
 class Animator {

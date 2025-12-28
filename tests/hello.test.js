@@ -1,5 +1,5 @@
-QUnit.module('Hello Test', () => {
-    QUnit.test('hello world test', assert => {
-        assert.equal('Hello, World!', 'Hello, World!', 'Expected output is Hello, World!');
-    });
+import { test, expect } from 'vitest';
+
+test('hello world', () => {
+	expect(1 + 1).toBe(2);
 });

@@ -1,3 +1,5 @@
+import * as glMatrix from 'gl-matrix';
+
 // faces: array of faces; each face is array of tokens like {v: int, vn: int}
 // vertices: array of [x,y,z], indexed 0-based
 // vns: array of [x,y,z], indexed 0-based (OBJ の vn)
