@@ -181,27 +181,30 @@ function create_sphere_geometry(gl, radius = 1, sectors = 32, rings = 16) {
     return new Geometry(gl, new Float32Array(vertices), new Float32Array(normals), new Float32Array(vus), new Uint32Array(indices));
 }
 
-function createMeshData(vtx, nrm, faces) {
+function createMeshData(vtx, nrm, vt, faces) {
 
     const vary = [];
+    const tary = [];
     const nary = [];
     const iary = [];
     let index = 0;
     for (let face of faces) {
         for (let i = 0; i < face.length; i++) {
             const vi = face[i][0] - 1;
-            const ni = face[i][1] - 1;
+            const ti = face[i][1] - 1;
+            const ni = face[i][2] - 1;
             const v = vtx[vi];
+            const t = vt[ti];
             const n = nrm[ni];
             vary.push(v[0], v[1], v[2]);
+            tary.push(t[0], t[1]);
             nary.push(n[0], n[1], n[2]);
             iary.push(index++);
         }
     }
 
-    const uvs = new Float32Array(0, 0);
-
-    return [new Float32Array(vary), new Float32Array(nary), uvs, new Uint32Array(iary)];
+    console.log(tary)
+    return [new Float32Array(vary), new Float32Array(nary), new Float32Array(tary), new Uint32Array(iary)];
 }
 
 function create_cube_geometry(gl, width, height, depth, inverted = false) {
@@ -232,44 +235,48 @@ function create_cube_geometry(gl, width, height, depth, inverted = false) {
         [1, 0, 0],  // 右
     ];
 
-    // 各面ごとの頂点データ
+    // 各面用のUV座標（左下, 右下, 右上, 左上）
+    const vt = [
+        [0, 0], // 1
+        [1, 0], // 2
+        [1, 1], // 3
+        [0, 1], // 4
+    ];
+
+    // 各面ごとの頂点データ（UVインデックスを各面で割り当て）
     // 添え字は１始まりに注意
     const faces = [
         // back (-Z)
         [
-            [1, 1], [3, 1], [2, 1],
-            [1, 1], [4, 1], [3, 1],
+            [1, 1, 1], [3, 3, 1], [2, 2, 1],
+            [1, 1, 1], [4, 4, 1], [3, 3, 1],
         ],
-
         // front (+Z)
         [
-            [5, 2], [6, 2], [7, 2],
-            [5, 2], [7, 2], [8, 2],
+            [5, 1, 2], [6, 2, 2], [7, 3, 2],
+            [5, 1, 2], [7, 3, 2], [8, 4, 2],
         ],
         // bottom (-Y)
         [
-            [1, 3], [2, 3], [6, 3],
-            [1, 3], [6, 3], [5, 3],
+            [1, 1, 3], [2, 2, 3], [6, 3, 3],
+            [1, 1, 3], [6, 3, 3], [5, 4, 3],
         ],
-
         // top (+Y)
         [
-            [4, 4], [8, 4], [7, 4],
-            [4, 4], [7, 4], [3, 4],
+            [4, 1, 4], [8, 2, 4], [7, 3, 4],
+            [4, 1, 4], [7, 3, 4], [3, 4, 4],
         ],
-
         // left (-X)
         [
-            [1, 5], [8, 5], [4, 5],
-            [1, 5], [5, 5], [8, 5],
+            [1, 1, 5], [8, 2, 5], [4, 3, 5],
+            [1, 1, 5], [5, 4, 5], [8, 2, 5],
         ],
-
         // right (+X)
         [
-            [2, 6], [3, 6], [7, 6],
-            [2, 6], [7, 6], [6, 6],
+            [2, 1, 6], [3, 2, 6], [7, 3, 6],
+            [2, 1, 6], [7, 3, 6], [6, 4, 6],
         ]
-    ]
+    ];
 
     if (inverted) {
         // 面の向きを反転
@@ -282,7 +289,7 @@ function create_cube_geometry(gl, width, height, depth, inverted = false) {
         }
     }
 
-    return new Geometry(gl, ...createMeshData(vertex, normals, faces));
+    return new Geometry(gl, ...createMeshData(vertex, normals, vt, faces));
 }
 
 
@@ -308,8 +315,10 @@ function create_plain_geometry(gl, size) {
     ];
 
 
-
-    return new Geometry(gl, ...createMeshData(vertex, normals, faces));
+    const vt = [
+        [0, 0],  // 0
+    ];
+    return new Geometry(gl, ...createMeshData(vertex, normals, vt, faces));
 }
 
 function create_triangle_geometry(gl) {
