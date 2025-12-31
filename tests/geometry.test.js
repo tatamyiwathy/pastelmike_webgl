@@ -99,7 +99,6 @@ describe('geometry.js', () => {
     it('create_cube_geometryでGeometryが生成できる', () => {
         const gl = { createBuffer: () => ({}), bindBuffer: () => {}, bufferData: () => {}, deleteBuffer: () => {} };
         const cube = geometry.create_cube_geometry(gl, 1, 1, 1);
-        console.log("length:",  cube.uv_vbo.array.length);
         expect(cube).toBeInstanceOf(geometry.Geometry);
         expect(cube.v_vbo).not.toBeNull();
         expect(cube.n_vbo).not.toBeNull();
@@ -108,5 +107,15 @@ describe('geometry.js', () => {
         expect(cube.tri_indices_len).toBeGreaterThan(0);
     });
 
-
+    it('create_plain_geometryでGeometryが生成できる', () => {
+        const gl = { createBuffer: () => ({}), bindBuffer: () => {}, bufferData: () => {}, deleteBuffer: () => {} };
+        const cube = geometry.create_plain_geometry(gl, 1);
+        expect(cube).toBeInstanceOf(geometry.Geometry);
+        expect(cube.v_vbo).not.toBeNull();
+        expect(cube.n_vbo).not.toBeNull();
+        expect(cube.uv_vbo.array.length).not.toBe(0);
+        expect(cube.tri_ibo).not.toBeNull();
+        expect(cube.tri_indices_len).toBeGreaterThan(0);
+    });
+    
 });

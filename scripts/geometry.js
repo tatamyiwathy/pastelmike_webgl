@@ -194,16 +194,17 @@ function createMeshData(vtx, nrm, vt, faces) {
             const ti = face[i][1] - 1;
             const ni = face[i][2] - 1;
             const v = vtx[vi];
+            if (!v) throw new Error('Invalid vertex index');
             const t = vt[ti];
+            if (!t) throw new Error('Invalid texture coordinate index');
             const n = nrm[ni];
+            if (!n) throw new Error('Invalid normal index');
             vary.push(v[0], v[1], v[2]);
             tary.push(t[0], t[1]);
             nary.push(n[0], n[1], n[2]);
             iary.push(index++);
         }
     }
-
-    console.log(tary)
     return [new Float32Array(vary), new Float32Array(nary), new Float32Array(tary), new Uint32Array(iary)];
 }
 
@@ -310,13 +311,16 @@ function create_plain_geometry(gl, size) {
 
     // 床パネルのインデックス（2つの三角形で四角形を構成）
     const faces = [
-        [[1, 1], [3, 1], [2, 1]],  // 最初の三角形
-        [[1, 1], [4, 1], [3, 1]]   // 2番目の三角形
+        [[1, 1, 1], [3, 2, 1], [2, 3, 1]],  // 最初の三角形
+        [[1, 1, 1], [4, 4, 1], [3, 3, 1]]   // 2番目の三角形
     ];
 
 
     const vt = [
         [0, 0],  // 0
+        [1, 0],  // 1
+        [1, 1],  // 2
+        [0, 1],  // 3
     ];
     return new Geometry(gl, ...createMeshData(vertex, normals, vt, faces));
 }
@@ -341,5 +345,6 @@ function create_triangle_geometry(gl) {
 
     return new Geometry(gl, vertex, normal, null, index);
 }
+
 
 export { Geometry, PointGeometry, create_torus_geometory, create_sphere_geometry, create_cube_geometry, create_plain_geometry, create_triangle_geometry };

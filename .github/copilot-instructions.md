@@ -5,8 +5,8 @@
 
 ## 開発環境
 - wsl2上のUbuntu 22.04
-- Node.js v18.x
-- Docker (docker-composeを使用してテスト環境を構築)
+- Node.js v20.19.6
+
 
 ## ディレクトリ構成
 - "scripts/": エンジンの主要なJavaScriptコード
@@ -20,7 +20,6 @@
 
 ## テスト
 - vitestを使用してテストコードが書かれている。
-- テストはdocker-compose経由で実行される。
 - testsディレクトリ内に*.test.jsという名前でテストコードが配置されている。scriptsディレクトリに対応するコードがある。
 
 
