@@ -33,7 +33,7 @@ describe('Camera', () => {
     test('カメラのlook', () => {
         const camera = new PerspectiveCamera(60, 1.0, 0.1, 1000);
         camera.position = [0, 0, 0];
-        camera.lookAt(0, 0, -1);
+        camera.look([0, 0, -1]);
         expect(camera.mdlViewMtx).toBeTruthy();
     });
 });
