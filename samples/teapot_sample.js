@@ -64,7 +64,7 @@ function main() {
     scene.add(plainMesh);
 
     const objLoader = new ObjLoader();
-    objLoader.load(gl, '../assets/teapot.obj').then((obj) => {
+    objLoader.load(gl, './assets/teapot.obj').then((obj) => {
         obj.position = [-1, 1, -3];
         obj.scale = [0.025, 0.025, 0.025];
         scene.add(obj);
@@ -77,7 +77,7 @@ function main() {
     // sphereMesh.position = [0, 1, 3];
     // scene.add(sphereMesh);
     const loader = new ObjLoader();
-    loader.load(gl, '../assets/sphere.obj').then((obj) => {
+    loader.load(gl, './assets/sphere.obj').then((obj) => {
         obj.position = [0, 1, 3];
         scene.add(obj);
     });

@@ -94,12 +94,12 @@ function main() {
 
     // キューブマップの画像情報
     const skyboxImages = {
-        right: '../assets/Panorama_Sky_01-512x512_r.png',
-        left: '../assets/Panorama_Sky_01-512x512_l.png',
-        up: '../assets/Panorama_Sky_01-512x512_u.png',
-        down: '../assets/Panorama_Sky_01-512x512_d.png',
-        front: '../assets/Panorama_Sky_01-512x512_f.png',
-        back: '../assets/Panorama_Sky_01-512x512_b.png'
+        right: './assets/Panorama_Sky_01-512x512_r.png',
+        left: './assets/Panorama_Sky_01-512x512_l.png',
+        up: './assets/Panorama_Sky_01-512x512_u.png',
+        down: './assets/Panorama_Sky_01-512x512_d.png',
+        front: './assets/Panorama_Sky_01-512x512_f.png',
+        back: './assets/Panorama_Sky_01-512x512_b.png'
     };
 
     const skybox = new Skybox(gl, 15, skyboxImages);

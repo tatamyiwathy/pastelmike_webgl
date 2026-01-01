@@ -1,6 +1,6 @@
 import { parseMtl } from './mtl_parser.js';
 import { parseObj } from './obj_parser.js';
-import { TextureLoader } from './texture.js';
+import { TextureLoader } from './texture_loader.js';
 import { Geometry } from './geometry.js';
 import { Material } from './material.js';
 import { ShaderName } from './shader.js';

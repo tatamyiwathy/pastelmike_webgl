@@ -8,8 +8,7 @@ import {
 } from '../scripts/geometry.js';
 import { MeshSpecularMaterial, MeshSimpleMaterial } from '../scripts/material.js';
 import { Mesh } from '../scripts/mesh.js';
-import { TextureLoader } from '../scripts/texture.js';
-import { Sprite } from '../scripts/flare.js';
+import { TextureLoader } from '../scripts/texture_loader.js';
 import { Animator } from '../scripts/object_3d.js';
 
 function main() {
@@ -54,7 +53,7 @@ function main() {
 
     const sphere_geometry = new create_sphere_geometry(gl);
     const textureLoader = new TextureLoader();
-    const texture = textureLoader.load(gl, '../assets/lroc_color_2k.jpg');
+    const texture = textureLoader.load(gl, './assets/lroc_color_2k.jpg');
     const materialContext = { textures: texture };
     const sphere_material = new MeshSpecularMaterial(gl, materialContext);
     sphere_material.useTexture = true;
