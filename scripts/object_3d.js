@@ -41,7 +41,6 @@ class Object3d {
     }
 
     set position(v){
-        console.log(v);
         if (v instanceof Float32Array) {
             this._position = v;
         } else if (Array.isArray(v)) {

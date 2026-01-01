@@ -4,14 +4,27 @@ import { Object3d } from './object_3d.js';
 class DirectionLight extends Object3d {
     constructor(gl, args = {}) {
         super('light');
-        this.direction = (args.direction instanceof Float32Array)
-            ? args.direction
-            : glMatrix.vec3.fromValues(...(args.direction || [0, 1, 0]));
+        this.direction = args.direction || [0, -1, 0];
         this.color = [1, 1, 1]; // 白色光源
         this.lightKind = "directional";
     }
 
-    direction = [0, 1, 0];
+
+    get direction() {
+        return this._direction;
+    }
+
+    set direction(v) {
+        console.log(v);
+        if (v instanceof Float32Array) {
+            this._direction = v;
+        } else if (Array.isArray(v)) {
+            this._direction = glMatrix.vec3.fromValues(...v);
+        } else {
+            throw new Error('direction must be Float32Array or array');
+        }
+    }
+
 
 }
 
