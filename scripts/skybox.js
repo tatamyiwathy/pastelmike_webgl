@@ -1,7 +1,6 @@
 import { Geometry } from './geometry.js';
 import { Mesh } from './mesh.js';
 import { CubeMapMaterial } from './material.js';
-import { mat4 } from './math_utils.js';
 
 class Skybox extends Mesh {
     constructor(gl, args={}) {
@@ -17,7 +16,7 @@ class Skybox extends Mesh {
         viewDirectionMatrix[14] = 0;
 
         // ビュー方向行列と射影行列を結合
-        this.mvpMtx = mat4.multiply4x4(projection, viewDirectionMatrix);
+        glMatrix.mat4.multiply(this.mvpMtx, projection, viewDirectionMatrix);
 
     }
 

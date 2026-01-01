@@ -2,7 +2,6 @@ import { ShaderManager } from './shader.js';
 import { ObjGroup } from './scene.js';
 import { Frustum } from './frustum.js';
 import { Clock } from './clock.js';
-import { vec3 } from './math_utils.js';
 import { Material } from './material.js';
 
 export class Renderer {
