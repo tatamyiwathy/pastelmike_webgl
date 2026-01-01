@@ -39,7 +39,8 @@ class PerspectiveCamera extends Camera {
     }
 
     look(forward) {
-        this.mdlViewMtx = MathUtils.look(this.position, forward, this.up);
+        const lookat = this.position.map((v, i) => v + forward[i]);
+        this.lookAt(lookat);
     }
 }
 
