@@ -35,9 +35,10 @@ export class Renderer {
     }
 
     getDirectionLightDir(gl, scene) {
-        const directionalLights = scene.lights.filter( light => light. lightKind === "directional" );
-        const lightsDir = directionalLights.reduce( ( acc, light) => vec3.add(acc, light.direction), [0,0,0]);
-        return vec3.normalize(lightsDir);
+        // const directionalLights = scene.lights.filter( light => light. lightKind === "directional" );
+        // const lightsDir = directionalLights.reduce( ( acc, light) => vec3.add(acc, light.direction), [0,0,0]);
+        const dir = scene.lights[0].direction;
+        return vec3.normalize(dir);
     }
 
     setupShaders(gl, shaderContext) {

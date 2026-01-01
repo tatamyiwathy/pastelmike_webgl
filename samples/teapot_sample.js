@@ -90,7 +90,7 @@ function main() {
     torusMesh.rotateX(Math.PI / 2);
     scene.add(torusMesh);
 
-    const dl = new DirectionLight(gl, 1,0,0);
+    const dl = new DirectionLight(gl, {direction: [1,0,0]});
     scene.add(dl);
 
     

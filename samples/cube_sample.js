@@ -80,7 +80,7 @@ function main() {
     scene.add(cube_mesh);
 
     {
-        const light = new DirectionLight(gl, -1, 0, 0);
+        const light = new DirectionLight(gl, {direction: [-1, 0, 0]});
         light.color = [1, 1, 1]; // 白色光源
         scene.add(light);
     }

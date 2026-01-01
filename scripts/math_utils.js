@@ -2,8 +2,8 @@
 export const vec3 = {
     // ベクトルの正規化
     normalize: function (v) {
-        const length = Math.sqrt(v[0] * v[0] + v[1] * v[1] + v[2] * v[2]);
-        return length > 0 ? [v[0] / length, v[1] / length, v[2] / length] : [0, 0, 0];
+        if (!(v instanceof Float32Array)) throw new TypeError('引数vはFloat32Arrayのみ');        
+        return glMatrix.vec3.normalize(glMatrix.vec3.create(), v);
     },
 
     // 外積

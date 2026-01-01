@@ -14,7 +14,7 @@ function main() {
 
     const scene = new Scene();
 
-    const light = new DirectionLight(gl, 0,1,0);
+    const light = new DirectionLight(gl, {direction: [0,1,0]});
     scene.add(light);
 
     const objLoader = new ObjLoader();
