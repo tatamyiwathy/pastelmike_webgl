@@ -163,32 +163,7 @@ export const MathUtils = {
         ]);
     },
 
-    // ビュー行列（カメラ位置とターゲット位置から）
-    lookAt: function (cameraPos, target, up) {
-        // Z軸（カメラの前方向の逆）
-        const zAxis = vec3.normalize([
-            cameraPos[0] - target[0],
-            cameraPos[1] - target[1],
-            cameraPos[2] - target[2]
-        ]);
-
-        // X軸（右方向）
-        const xAxis = vec3.normalize(vec3.cross(up, zAxis));
-
-        // Y軸（上方向）
-        const yAxis = vec3.cross(zAxis, xAxis);
-
-        return new Float32Array([
-            xAxis[0], yAxis[0], zAxis[0], 0,
-            xAxis[1], yAxis[1], zAxis[1], 0,
-            xAxis[2], yAxis[2], zAxis[2], 0,
-            -vec3.dot(xAxis, cameraPos),
-            -vec3.dot(yAxis, cameraPos),
-            -vec3.dot(zAxis, cameraPos),
-            1
-        ]);
-    },
-
+    
     look: function (cameraPos, forward, up) {
         // cameraPos: [x, y, z]
         // forward: [x, y, z] (カメラの視線方向。必ず単位ベクトルにすること)
