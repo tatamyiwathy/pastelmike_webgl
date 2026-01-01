@@ -4,10 +4,40 @@ import { MathUtils } from "./math_utils.js";
 class Camera extends Object3d {
     constructor(options = {}) {
         super('camera', options);
-        this.up = options.up || [0, 1, 0];
-        this.position = options.position || [0, 0, 0];
+        this._up = options.up || [0, 1, 0];
+        this._position = options.position || [0, 0, 0];
     }
     lookAt(target) { }
+
+    set up(v) {
+        if (v instanceof Float32Array) {
+            this._up = v;
+        } else if (Array.isArray(v)) {
+            this._up = new Float32Array(v);
+        } else {
+            throw new Error('up must be Float32Array or array');
+        }
+        this.needsUpdateMatrix = true;
+    }
+
+    get up() {
+        return this._up;
+    }   
+
+    set position(v) {
+        if (v instanceof Float32Array) {
+            this._position = v;
+        } else if (Array.isArray(v)) {
+            this._position = new Float32Array(v);
+        } else {
+            throw new Error('position must be Float32Array or array');
+        }
+        this.needsUpdateMatrix = true;
+    }
+
+    get position() {
+        return this._position;
+    }
 }
 
 class PerspectiveCamera extends Camera {
