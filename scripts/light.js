@@ -1,4 +1,3 @@
-import { glMatrix } from 'gl-matrix';
 import { Object3d } from './object_3d.js';
 
 
