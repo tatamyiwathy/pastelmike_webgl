@@ -1,10 +1,11 @@
+import { glMatrix } from 'gl-matrix';
 import { Object3d } from './object_3d.js';
 
 
 class DirectionLight extends Object3d {
     constructor(gl, args = {}) {
         super('light');
-        this.direction = args.direction || [0, -1, 0];
+        this._direction = args.direction || [0, -1, 0];
         this.color = [1, 1, 1]; // 白色光源
         this.lightKind = "directional";
     }
@@ -14,8 +15,8 @@ class DirectionLight extends Object3d {
         return this._direction;
     }
 
+    // 正規化される
     set direction(v) {
-        console.log(v);
         if (v instanceof Float32Array) {
             this._direction = v;
         } else if (Array.isArray(v)) {
@@ -23,6 +24,7 @@ class DirectionLight extends Object3d {
         } else {
             throw new Error('direction must be Float32Array or array');
         }
+        glMatrix.vec3.normalize(this._direction, this._direction);
     }
 
 

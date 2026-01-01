@@ -140,12 +140,6 @@ export const mat4 = {
         return result;
     },
 
-    // ビュー行列の平行移動成分をリセットするカスタム関数
-    getDirectionMatrix: (viewMatrix) => {
-        const m = new Float32Array(viewMatrix);
-        m[12] = m[13] = m[14] = 0; // x, y, zの平行移動成分を0に
-        return m;
-    }
 };
 
 export const MathUtils = {

@@ -37,8 +37,11 @@ export class Renderer {
     getDirectionLightDir(gl, scene) {
         // const directionalLights = scene.lights.filter( light => light. lightKind === "directional" );
         // const lightsDir = directionalLights.reduce( ( acc, light) => vec3.add(acc, light.direction), [0,0,0]);
-        const dir = scene.lights[0].direction;
-        return vec3.normalize(dir);
+        if( scene.lights.length == 0 ) {
+            return new Float32Array([0, -1, 0]);
+        }
+        // directionは正規化されている
+        return scene.lights[0].direction;
     }
 
     setupShaders(gl, shaderContext) {
