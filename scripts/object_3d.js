@@ -14,12 +14,13 @@ class Object3d {
     constructor(type = '', options = {}) {
         this.type = type;   //
 
-        this.position = new Float32Array([0, 0, 0]);
-        this.rotation = new Float32Array([0, 0, 0]);
-        this.scale = new Float32Array([1, 1, 1]);
-        this.up = new Float32Array([0, 1, 0]);
+        this._position = new Float32Array([0, 0, 0]);
+        this._rotation = new Float32Array([0, 0, 0]);
+        this._scale = new Float32Array([1, 1, 1]);
+        this._up = new Float32Array([0, 1, 0]);
+        this._clip = glMatrix.vec4.create(); // クリップ座標
+
         this.quaternion = glMatrix.quat.create();
-        this.clip = glMatrix.vec4.create(); // クリップ座標
 
         this.mvpMtx = glMatrix.mat4.create();
         this.normalMtx = glMatrix.mat4.create();
@@ -34,6 +35,84 @@ class Object3d {
         this.parent = null;
         this.children = [];
     }
+
+    get position(){
+        return this._position;
+    }
+
+    set position(v){
+        console.log(v);
+        if (v instanceof Float32Array) {
+            this._position = v;
+        } else if (Array.isArray(v)) {
+            this._position = new Float32Array(v);
+        } else {
+            throw new Error('position must be Float32Array or array');
+        }
+        this.needsUpdateMatrix = true;
+    }
+    
+    get rotation(){
+        return this._rotation;
+    }
+
+    set rotation(v){
+        if (v instanceof Float32Array) {
+            this._rotation = v;
+        } else if (Array.isArray(v)) {
+            this._rotation = new Float32Array(v);
+        } else {
+            throw new Error('rotation must be Float32Array or array');
+        }
+        this.needsUpdateMatrix = true;
+    }
+
+    get scale(){
+        return this._scale;
+    }
+
+    set scale(v){
+        if (v instanceof Float32Array) {
+            this._scale = v;
+        } else if (Array.isArray(v)) {
+            this._scale = new Float32Array(v);
+        } else {
+            throw new Error('scale must be Float32Array or array');
+        }
+        this.needsUpdateMatrix = true;
+    }
+
+    get up(){
+        return this._up;
+    }
+
+    set up(v){
+        if (v instanceof Float32Array) {
+            this._up = v;
+        } else if (Array.isArray(v)) {
+            this._up = new Float32Array(v);
+        } else {
+            throw new Error('up must be Float32Array or array');
+        }
+        this.needsUpdateMatrix = true;
+    }       
+
+    get clip(){
+        return this._clip;
+    }
+
+    set clip(v){
+        if (v instanceof Float32Array) {
+            this._clip = v;
+        }
+        else if (Array.isArray(v)) {
+            this._clip = new Float32Array(v);
+        }
+        else {
+            throw new Error('clip must be Float32Array or array');
+        }
+    }
+
 
     updateFrame(deltaTime) { }
 
