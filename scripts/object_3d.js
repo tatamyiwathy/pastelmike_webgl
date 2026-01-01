@@ -1,5 +1,4 @@
 
-import * as glMatrix from 'gl-matrix';
 
 
 class Animator {

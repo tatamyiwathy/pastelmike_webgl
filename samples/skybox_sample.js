@@ -6,6 +6,7 @@ import { Animator } from '../scripts/object_3d.js';
 import { Mesh } from '../scripts/mesh.js';
 import { create_plain_geometry } from '../scripts/geometry.js';
 import { MeshSimpleMaterial } from '../scripts/material.js';
+import { CubeTexureLoader, TextureLoader } from '../scripts/texture_loader.js';
 
 function main() {
     const canvas = document.getElementById('canvas');
@@ -33,7 +34,20 @@ function main() {
         back: '../assets/Panorama_Sky_01-512x512_b.png'
     };
 
-    const skybox = new Skybox(gl, 15, skyboxImages);
+
+    const urls = [
+        "assets/Panorama_Sky_01-512x512_r.png",
+        "assets/Panorama_Sky_01-512x512_l.png",
+        "assets/Panorama_Sky_01-512x512_u.png",
+        "assets/Panorama_Sky_01-512x512_d.png",
+        "assets/Panorama_Sky_01-512x512_f.png",
+        "assets/Panorama_Sky_01-512x512_b.png",
+    ];
+
+    const textureLoader = new CubeTexureLoader();
+    const textures = textureLoader.load(gl, urls);
+
+    const skybox = new Skybox(gl, {size:15, textures: textures} );
     scene.add(skybox, {layer: 0} );
 
 

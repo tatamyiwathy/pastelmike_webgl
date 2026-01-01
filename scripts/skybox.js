@@ -4,8 +4,8 @@ import { CubeMapMaterial } from './material.js';
 import { mat4 } from './math_utils.js';
 
 class Skybox extends Mesh {
-    constructor(gl, size, paths) {
-        super(gl, new Geometry(gl,Skybox.positions), new CubeMapMaterial(gl,paths));
+    constructor(gl, args={}) {
+        super(gl, new Geometry(gl,Skybox.positions), new CubeMapMaterial(gl,{textures: args.textures}));
     }
 
     updateMatrix(projection, view, proj_view) 

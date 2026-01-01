@@ -1,4 +1,3 @@
-import * as glMatrix from 'gl-matrix';
 import { describe, test, expect } from 'vitest';
 import { PerspectiveCamera } from '../scripts/camera.js';
 

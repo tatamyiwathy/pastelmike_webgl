@@ -4,5 +4,10 @@
 			"path": "."
 		}
 	],
-	"settings": {}
+	"settings": {
+		"liveServer.settings.AdvanceCustomBrowserCmdLine": "",
+		"liveServer.settings.CustomBrowser": "wslview",
+		"liveServer.settings.root": "~/pastelmike_webgl",  // サーバーのルートディレクトリをプロジェクト内の「public」フォルダに設定
+ 
+	}
 }

@@ -1,4 +1,3 @@
-import * as glMatrix from 'gl-matrix';
 import { ShaderManager } from './shader.js';
 import { ObjGroup } from './scene.js';
 import { Frustum } from './frustum.js';
