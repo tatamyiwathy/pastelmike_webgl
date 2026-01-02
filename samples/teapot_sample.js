@@ -92,9 +92,11 @@ function main() {
     torusMesh.rotateX(Math.PI / 2);
     scene.add(torusMesh);
 
-    const dl = new DirectionLight(gl, {direction: [1,0,0]});
+    // 平行光源
+    const dl = new DirectionLight(gl, {direction: [1,0,0], color: [1,0,0]});
     scene.add(dl);
 
+    scene.add(new DirectionLight(gl, {direction: [0,0,1], color: [0,0,1]}));
 
 
     class LightAnimator extends Animator {
@@ -121,6 +123,7 @@ function main() {
     scene.add(sprite, {layer: 2});
 
 
+    // 点光源
     const light = new PointLight(gl, { animator: new LightAnimator() });
     scene.add(light);
 

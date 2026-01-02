@@ -5,7 +5,7 @@ class DirectionLight extends Object3d {
     constructor(gl, args = {}) {
         super('light');
         this._direction = args.direction || [0, -1, 0];
-        this.color = [1, 1, 1]; // 白色光源
+        this.color = args.color || [1, 1, 1]; // 白色光源
         this.lightKind = "directional";
     }
 

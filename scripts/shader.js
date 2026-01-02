@@ -426,9 +426,10 @@ class BasicShader extends ShaderProgram {
         this.dirLightDirLocations = [];
         this.dirLightColorLocations = [];
         for (let i = 0; i < shaderContext.maxDirLights; i++) {
-            this.dirLightDirLocations[i] = gl.getUniformLocation(this.program, 'dirLights['+i+'].direction');
-            this.dirLightColorLocations[i] = gl.getUniformLocation(this.program, 'dirLights['+i+'].color');
+            this.dirLightDirLocations[i] = gl.getUniformLocation(this.program, 'dirLights[' + i + '].direction');
+            this.dirLightColorLocations[i] = gl.getUniformLocation(this.program, 'dirLights[' + i + '].color');
         }
+        this.dirLightCountLocation = gl.getUniformLocation(this.program, 'dirLightCount');
         // this.directionalLightDirLocation = gl.getUniformLocation(this.program, 'directionalLightDir');
         //this.directionalLightColorLocation = gl.getUniformLocation(this.program, 'directionalLightColor');
         this.colorLocation = gl.getUniformLocation(this.program, 'color');
@@ -494,10 +495,11 @@ class BasicShader extends ShaderProgram {
         gl.uniform1f(this.fogEndLocation, renderContext.fogEnd); // フォグが完全に不透明になる距離
 
         // 平行光源関連のユニフォーム変数を設定
-        for( let i=0; i< renderContext.dirLightNum; i++ ){
+        for (let i = 0; i < renderContext.dirLightNum; i++) {
             gl.uniform3f(this.dirLightDirLocations[i], ...renderContext.dirLights[i].direction);
             gl.uniform3f(this.dirLightColorLocations[i], ...renderContext.dirLights[i].color);
         }
+        gl.uniform1i(this.dirLightCountLocation, renderContext.dirLightNum);
         // gl.uniform3f(this.directionalLightDirLocation, ...renderContext.directionalLightDir); // 平行光源
         // gl.uniform3f(this.directionalLightColorLocation, ...renderContext.directionalLightColor); // 白色光源
 
@@ -547,7 +549,7 @@ class SkyBoxShader extends ShaderProgram {
         gl.depthFunc(gl.LEQUAL);
 
         // ユニフォーム変数の設定
-        gl.uniformMatrix4fv(this.viewDirectionProjectionMatrix,false,renderContext.modelViewProjection);
+        gl.uniformMatrix4fv(this.viewDirectionProjectionMatrix, false, renderContext.modelViewProjection);
         gl.uniformMatrix4fv(this.viewMatrix, false, renderContext.viewMatrix);
 
         gl.uniform4f(this.fogColor, ...renderContext.fogColor); // フォグの色

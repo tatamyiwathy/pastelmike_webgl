@@ -66,15 +66,16 @@ class Scene extends Object3d {
         return this.lights.filter(light => light.lightKind === "point");
     }
 
+    getDirectionalLights() {
+        return this.lights.filter(light => light.lightKind === "directional");
+    }
+
     dispose(gl) {
         this.children.forEach((group) => {
             group.dispose(gl);
         });
     }
 
-    getDirectionalLights() {
-        return this.lights.filter(light => light.lightKind === "directional");
-    }
 }
 
 export { Scene, ObjGroup };
