@@ -1,25 +1,26 @@
 import { describe, test, expect } from 'vitest';
 import { Renderer } from '../scripts/renderer.js';
 import { Scene } from '../scripts/scene.js';
+import { ShaderManager } from '../scripts/shader.js';
 
 function createMockGL() {
 	// WebGL2RenderingContextの必要な部分だけモック
 	return {
 		getContext: () => this,
-		viewport: () => {},
-		enable: () => {},
-		depthFunc: () => {},
-		clearColor: () => {},
-		clearDepth: () => {},
-		clear: () => {},
-		createShader: () => {},
-		shaderSource: () => {},
-		compileShader: () => {},
+		viewport: () => { },
+		enable: () => { },
+		depthFunc: () => { },
+		clearColor: () => { },
+		clearDepth: () => { },
+		clear: () => { },
+		createShader: () => { },
+		shaderSource: () => { },
+		compileShader: () => { },
 		getShaderParameter: () => true,
 		getShaderInfoLog: () => '',
-		createProgram: () => {},
-		attachShader: () => {},
-		linkProgram: () => {},
+		createProgram: () => { },
+		attachShader: () => { },
+		linkProgram: () => { },
 		getProgramParameter: () => true,
 		getProgramInfoLog: () => '',
 		getAttribLocation: () => 0,
@@ -39,7 +40,7 @@ describe('Renderer', () => {
 		expect(renderer.gl).toBeTruthy();
 		expect(renderer.frustum).toBeTruthy();
 		expect(renderer.enableCulling).toBe(true);
-		expect(renderer.clearColor).toEqual([0,0,0,1]);
+		expect(renderer.clearColor).toEqual([0, 0, 0, 1]);
 	});
 
 	// test('getDirectionLightDir returns normalized direction', () => {
@@ -63,11 +64,63 @@ describe('Renderer', () => {
 		// frustum.isSphereInsideを常にtrue/false返すようにモック
 		renderer.frustum.isSphereInside = (pos, r) => pos[0] > 0;
 		const objects = [
-			{ position: [1,0,0] },
-			{ position: [-1,0,0] }
+			{ position: [1, 0, 0] },
+			{ position: [-1, 0, 0] }
 		];
 		const culled = renderer.frustumCulling(objects);
 		expect(culled.length).toBe(1);
-		expect(culled[0].position).toEqual([1,0,0]);
+		expect(culled[0].position).toEqual([1, 0, 0]);
+	});
+
+	test('Renderer.renderが最低限動作する', () => {
+		// canvasとglのモック
+		const glMock = createMockGL();
+		const canvas = { getContext: () => glMock };
+		// シーン・カメラの最低限モック
+		const scene = {
+			updateFrame: () => { },
+			isFog: false,
+			fogColor: [0, 0, 0, 1],
+			fogStart: 0,
+			fogEnd: 1,
+			ambientColor: [0.2, 0.2, 0.2],
+			lights: [{ lightKind: 'directional', direction: [1, 0, 0], color: [1, 1, 1] }],
+			getPointLights: () => [],
+			children: [
+				{
+					sortOrder: 0,
+					children: [
+						{
+							updateMatrix: () => { },
+							type: 'mesh',
+							material: { shaderName: 'basic', color: [1, 1, 1], isWireframe: false, useTexture: false },
+							geometry: {},
+							mvpMtx: [],
+							normalMtx: [],
+							worldMtx: [],
+							clip: [0, 0, 0],
+							position: [0, 0, 0]
+						}
+					]
+				}
+			]
+		};
+		const camera = {
+			projMtx: [],
+			mdlViewMtx: [],
+			position: [0, 0, 0]
+		};
+
+		const shaderRenderCalled = { called: false };
+		const renderer = new Renderer(canvas);
+		ShaderManager._shaders = {
+			basic: {
+				render: () => { shaderRenderCalled.called = true; }
+			}
+		};
+		renderer.readyShader = true; // シェーダー初期化をスキップ
+		renderer.render(scene, camera);
+
+		expect(shaderRenderCalled.called).toBe(true);
 	});
 });
