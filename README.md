@@ -35,6 +35,7 @@ A repository for learning WebGL
 
 - ✅ **ライティング**
   - Directional Light（平行光源）
+  - Point Light（点光源・減衰対応）
 
 - ✅ **エフェクト**
   - Fog（フォグ効果）
@@ -71,7 +72,6 @@ A repository for learning WebGL
 - ❌ カメラのスムーズな移動・補間
 
 ### 💡 ライティング
-- ❌ PointLight（点光源）
 - ❌ SpotLight（スポットライト）
 - ❌ AmbientLight（環境光）
 - ❌ HemisphereLight（半球ライト）
