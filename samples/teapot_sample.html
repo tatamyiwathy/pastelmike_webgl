@@ -22,31 +22,36 @@
             display: block;
             margin: 20px auto;
         }
-
     </style>
 </head>
 
 <body>
+    <div>
         <div>
-            <div>
-                <input type="checkbox" id="wireframe_switch" name="choice" value="1" style="margin: 0 8px 0 0;">
-                <label for="wireframe_switch"
-                    style="cursor: pointer; font-family: sans-serif; font-size: 14px;">ワイヤーフレーム</label>
-            </div>
-            <div>
-                <input type="checkbox" checked id="point_light_switch" name="choice" value="1" style="margin: 0 8px 0 0;">
-                <label for="point_light_switch"
-                    style="cursor: pointer; font-family: sans-serif; font-size: 14px;">ポイントライト</label>
-            </div>
+            <input type="checkbox" id="wireframe_switch" name="choice" value="1" style="margin: 0 8px 0 0;">
+            <label for="wireframe_switch"
+                style="cursor: pointer; font-family: sans-serif; font-size: 14px;">ワイヤーフレーム</label>
         </div>
-
-        <div style="position: relative; display: flex; justify-content: center; align-items: center;">
-            <canvas id="canvas" width="800" height="600"></canvas>
+        <div>
+            <input type="checkbox" checked id="point_light_switch" name="choice" value="1" style="margin: 0 8px 0 0;">
+            <label for="point_light_switch"
+                style="cursor: pointer; font-family: sans-serif; font-size: 14px;">ポイントライト</label>
         </div>
+    </div>
 
+    <div style="position: relative; display: flex; justify-content: center; align-items: center;">
+        <canvas id="canvas" width="800" height="600"></canvas>
+    </div>
 
-        <script src="https://cdn.jsdelivr.net/npm/gl-matrix@3.4.3/gl-matrix-min.js"></script>
-        <script type="module" src="./teapot_sample.js"></script>
+    <script type="importmap">
+  {
+    "imports": {
+      "gl-matrix": "https://cdn.jsdelivr.net/npm/gl-matrix@3.4.3/+esm"
+    }
+  }
+  </script>
+    <script src="https://cdn.jsdelivr.net/npm/gl-matrix@3.4.3/gl-matrix-min.js"></script>
+    <script type="module" src="./teapot_sample.js"></script>
 </body>
 
 </html>

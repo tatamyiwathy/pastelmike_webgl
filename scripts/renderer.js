@@ -1,3 +1,4 @@
+import { mat4 } from 'gl-matrix';
 import { ShaderManager } from './shader.js';
 import { ObjGroup } from './scene.js';
 import { Frustum } from './frustum.js';
@@ -21,7 +22,7 @@ export class Renderer {
 
         this.clock = new Clock();
 
-        this.vpMtx = glMatrix.mat4.create();
+        this.vpMtx = mat4.create();
 
         this.shaderContext = {
             isFog: true,
@@ -91,7 +92,7 @@ export class Renderer {
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
 
-        glMatrix.mat4.multiply( this.vpMtx, camera.projMtx, camera.mdlViewMtx);
+        mat4.multiply( this.vpMtx, camera.projMtx, camera.mdlViewMtx);
 
         // カリング用にフラスタムを更新
         this.frustum.extractPlanes(this.vpMtx);

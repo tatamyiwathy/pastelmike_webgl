@@ -7,5 +7,9 @@ export default defineConfig({
     deps: {
       inline: ['html-encoding-sniffer', '@exodus/bytes'],
     },
+    alias: {
+      // ソースコードの 'gl-matrix' を ローカルのパッケージに結びつける
+      'gl-matrix': 'gl-matrix'
+    }
   },
 });

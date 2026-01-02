@@ -1,4 +1,4 @@
-
+import { mat4, vec4, quat } from 'gl-matrix';
 
 
 class Animator {
@@ -18,13 +18,13 @@ class Object3d {
         this._rotation = new Float32Array([0, 0, 0]);
         this._scale = new Float32Array([1, 1, 1]);
         this._up = new Float32Array([0, 1, 0]);
-        this._clip = glMatrix.vec4.create(); // クリップ座標
+        this._clip = vec4.create(); // クリップ座標
 
-        this.quaternion = glMatrix.quat.create();
+        this.quaternion = quat.create();
 
-        this.mvpMtx = glMatrix.mat4.create();
-        this.normalMtx = glMatrix.mat4.create();
-        this.worldMtx = glMatrix.mat4.create(); // モデル行列ともいう
+        this.mvpMtx = mat4.create();
+        this.normalMtx = mat4.create();
+        this.worldMtx = mat4.create(); // モデル行列ともいう
 
         this.needsUpdateMatrix = true;
 
@@ -117,34 +117,34 @@ class Object3d {
 
     updateMatrix(projection, view, proj_view) {
         // クリップ座標計算
-        glMatrix.vec4.transformMat4(this.clip, [this.position[0], this.position[1], this.position[2], 1.0], proj_view);
+        vec4.transformMat4(this.clip, [this.position[0], this.position[1], this.position[2], 1.0], proj_view);
 
         // ワールド行列計算
-        glMatrix.mat4.fromRotationTranslationScale(this.worldMtx, this.quaternion, this.position, this.scale);
+        mat4.fromRotationTranslationScale(this.worldMtx, this.quaternion, this.position, this.scale);
 
         // モデル・ビュー・プロジェクション行列
-        glMatrix.mat4.multiply( this.mvpMtx, proj_view, this.worldMtx);
+        mat4.multiply( this.mvpMtx, proj_view, this.worldMtx);
 
         // 逆行列を計算
-        glMatrix.mat4.invert(this.normalMtx, this.worldMtx);
+        mat4.invert(this.normalMtx, this.worldMtx);
 
         // 転置行列を計算
-        glMatrix.mat4.transpose(this.normalMtx, this.normalMtx);        
+        mat4.transpose(this.normalMtx, this.normalMtx);        
 
     }
 
     rotateY(angle) {
-        const tmp = glMatrix.quat.create();
-        glMatrix.quat.setAxisAngle(tmp, [0, 1, 0], angle);
-        glMatrix.quat.multiply(this.quaternion, tmp, this.quaternion);
-        glMatrix.quat.normalize(this.quaternion, this.quaternion);
+        const tmp = quat.create();
+        quat.setAxisAngle(tmp, [0, 1, 0], angle);
+        quat.multiply(this.quaternion, tmp, this.quaternion);
+        quat.normalize(this.quaternion, this.quaternion);
     }
 
     rotateX(angle) {
-        const tmp = glMatrix.quat.create();
-        glMatrix.quat.setAxisAngle(tmp, [1, 0, 0], angle);
-        glMatrix.quat.multiply(this.quaternion, tmp, this.quaternion);
-        glMatrix.quat.normalize(this.quaternion, this.quaternion);
+        const tmp = quat.create();
+        quat.setAxisAngle(tmp, [1, 0, 0], angle);
+        quat.multiply(this.quaternion, tmp, this.quaternion);
+        quat.normalize(this.quaternion, this.quaternion);
     }
     updateFrame(deltaTime) {
         this.animator &&

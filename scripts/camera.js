@@ -1,3 +1,4 @@
+import { mat4, vec3 } from 'gl-matrix';
 import { Object3d } from "./object_3d.js";
 import { MathUtils } from "./math_utils.js";
 
@@ -47,25 +48,25 @@ class PerspectiveCamera extends Camera {
         this.aspect = aspect;
         this.near = near;
         this.far = far;
-        this.mdlViewMtx = glMatrix.mat4.create();
+        this.mdlViewMtx = mat4.create();
         this.projMtx = MathUtils.perspectiveMatrix(fov, aspect, near, far);
         this.lookAt([0, 0, 0]);
     }
 
     lookAt(target) {
-        const p = glMatrix.vec3.create();
+        const p = vec3.create();
         p[0] = this.position[0];
         p[1] = this.position[1];
         p[2] = this.position[2];
-        const t = glMatrix.vec3.create();
+        const t = vec3.create();
         t[0] = target[0];
         t[1] = target[1];
         t[2] = target[2];
-        const u = glMatrix.vec3.create();
+        const u = vec3.create();
         u[0] = this.up[0];
         u[1] = this.up[1];
         u[2] = this.up[2];
-        glMatrix.mat4.lookAt(this.mdlViewMtx, this.position, target, this.up);
+        mat4.lookAt(this.mdlViewMtx, this.position, target, this.up);
     }
 
     look(forward) {
