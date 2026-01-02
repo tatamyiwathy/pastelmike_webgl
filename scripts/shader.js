@@ -365,7 +365,6 @@ class SimpleTextureShader extends ShaderProgram {
         this.useProgram(gl);
 
         if (renderContext.blendMode !== Material.BlendMode.NONE) {
-            console.log('enable blend');
             gl.enable(gl.BLEND);
             gl.blendFunc(gl.SRC_ALPHA, gl.ONE);
         }

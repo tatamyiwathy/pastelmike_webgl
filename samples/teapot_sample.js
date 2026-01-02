@@ -8,6 +8,8 @@ import { create_plain_geometry } from '../scripts/geometry.js';
 import { PointLight, DirectionLight } from '../scripts/light.js';
 import { ObjLoader } from '../scripts/obj_loader.js';
 import { create_torus_geometory, create_sphere_geometry } from '../scripts/geometry.js';
+import { Sprite } from '../scripts/sprite.js';
+import { TextureLoader } from '../scripts/texture_loader.js';
 
 function main() {
     const canvas = document.getElementById('canvas');
@@ -93,7 +95,7 @@ function main() {
     const dl = new DirectionLight(gl, {direction: [1,0,0]});
     scene.add(dl);
 
-    
+
 
     class LightAnimator extends Animator {
         constructor() {
@@ -110,9 +112,20 @@ function main() {
         }
     }
 
+    const textureLoader = new TextureLoader();
+    const spriteTexture = textureLoader.load(gl, './assets/flare.png');
+    const sprite = new Sprite(gl, spriteTexture);
+    sprite.position = [0, 1, 0];
+    sprite.rotateX(-Math.PI / 2);
+    scene.add(sprite, {layer: 2});
+
 
     const light = new PointLight(gl, { animator: new LightAnimator() });
     scene.add(light);
+
+
+
+
 
     class CameraAnimator extends Animator {
         constructor() {
@@ -132,7 +145,7 @@ function main() {
         }
     }
 
-    const camera = new PerspectiveCamera(Math.PI / 2, canvas.width / canvas.height, 0.1, 100, {});
+    const camera = new PerspectiveCamera(Math.PI / 2, canvas.width / canvas.height, 0.1, 100, {animator: new CameraAnimator()});
     camera.position = [4, 4, 4];
     camera.lookAt([0, 0, 0]);
     scene.add(camera);
