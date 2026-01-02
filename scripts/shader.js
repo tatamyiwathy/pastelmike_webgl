@@ -75,7 +75,7 @@ const vertexShaderSource = `
     uniform mat4 modelMatrix;
     uniform mat4 normalMatrix;
     uniform mat4 viewMatrix;
-    uniform vec3 directionalLightDir;  // 光の方向
+    // uniform vec3 directionalLightDir;  // 光の方向
 
     in vec3 position;
     in vec3 normal;
@@ -83,7 +83,7 @@ const vertexShaderSource = `
 
     out vec3 v_worldPosition;
     out vec3 v_normal;
-    out vec3 v_directionalLightDir;    
+    // out vec3 v_directionalLightDir;    
     out float v_depth; // fog
     out vec2 v_texcoord; // UV座標 (vt)
 
@@ -94,8 +94,7 @@ const vertexShaderSource = `
 
         v_normal = normalize(mat3(normalMatrix) * normal);
 
-        v_directionalLightDir = directionalLightDir;
-
+        // v_directionalLightDir = directionalLightDir;
         v_texcoord = texcoord; // そのままフラグメントシェーダーへ
 
 #ifdef USE_FOG
@@ -121,7 +120,7 @@ const fragmentShaderSource = `
 
     // ライト
     uniform float shininess;
-    uniform vec3 directionalLightColor;
+    // uniform vec3 directionalLightColor;
     uniform vec3 pointLightPosition;    // 点光源の位置
     uniform vec3 pointLightColor;       // 点光源の色
     // uniform vec3 viewPosition;     // カメラ位置 cameraPosで代用
@@ -129,10 +128,16 @@ const fragmentShaderSource = `
     uniform bool usePointLight;
     uniform vec3 ambientLightColor;
 
+    struct DirectionalLight {
+        vec3 direction;
+        vec3 color;
+    };
+    uniform DirectionalLight dirLights[MAX_DIR_LIGHTS];
+    uniform int dirLightCount;
 
     in vec3 v_worldPosition;
     in vec3 v_normal;
-    in vec3 v_directionalLightDir;
+    // in vec3 v_directionalLightDir;
     in float v_depth;
     in vec2 v_texcoord;   // 頂点シェーダーから届いたUV
     
@@ -141,9 +146,28 @@ const fragmentShaderSource = `
     void main() {
         // ベクトルの正規化
         vec3 N = normalize(v_normal);
-        vec3 Ld = normalize(v_directionalLightDir);
         vec3 Lp = normalize(pointLightPosition - v_worldPosition); // 点光源から頂点への方向ベクトル
         vec3 V = normalize(cameraPos - v_worldPosition); // 視線方向
+
+        vec3 totalDiffuse = vec3(0.0);
+        vec3 totalSpecular = vec3(0.0);
+
+        for (int i = 0; i < MAX_DIR_LIGHTS; ++i) {
+            if (i >= dirLightCount) break;
+
+            vec3 Ld = normalize(dirLights[i].direction);
+            
+            //拡散反射
+            float diffD = max(dot(N, Ld), 0.0);
+            totalDiffuse += diffD * dirLights[i].color;
+
+#ifdef USE_SPECULAR
+            // スペキュラ
+            vec3 R = reflect(-Ld, N); // 光の反射ベクトル
+            float specStrength = pow(max(dot(R, V), 0.0), shininess); // 32.0は輝きの鋭さ
+            totalSpecular += vec3(1.0) * specStrength; // 白色のハイライト
+#endif  
+        }
 
         // ポイントライト
         vec3 diffuseP = vec3(0.0);
@@ -153,23 +177,12 @@ const fragmentShaderSource = `
             float attenuation = 1.0 / (constant + linear * distance + quadratic * (distance * distance));
             diffuseP = diffP * pointLightColor * attenuation;
         }
-        // 平行光源
-        float diffD = max(dot(N, Ld), 0.0);
-        //vec3 diffuseColor = color.rgb * directionalLightColor * (diff * 0.7 + 0.25);
-        vec3 diffuseD = diffD * directionalLightColor;
-
-        vec3 diffuse = diffuseD + diffuseP;
-#ifdef USE_SPECULAR
-        // --- 2. スペキュラ (Specular: Phong反射モデル) ---
-        vec3 R = reflect(-Ld, N); // 光の反射ベクトル
-        float specStrength = pow(max(dot(R, V), 0.0), shininess); // 32.0は輝きの鋭さ
-        vec3 specularColor = vec3(1.0) * specStrength; // 白色のハイライト
-#else
-        vec3 specularColor = vec3(0.0);
-#endif
+ 
+        // 点光源も加算
+        totalDiffuse += diffuseP;
 
         // 最終的な色の合成
-        vec4 baseColor = vec4(diffuseD + diffuseP + specularColor, 1.0) * color;
+        vec4 baseColor = vec4(totalDiffuse + totalSpecular, 1.0) * color;
         if (useTexture) {
             // 頂点シェーダーから渡されたUV座標をそのまま使う
             baseColor *= texture(samples, v_texcoord);
@@ -318,7 +331,8 @@ class ShaderProgram {
 }
 
 class SimpleShader extends ShaderProgram {
-    constructor(gl, shaderConfigs) {
+    constructor(gl, shaderContext) {
+        const shaderConfigs = shaderContext.config || '';
         super(gl, ShaderName.SIMPLE, shaderConfigs + simpleVertexShaderSource, shaderConfigs + simpleFragmentShaderSource);
 
         this.positionLocation = gl.getAttribLocation(this.program, 'position');
@@ -351,7 +365,8 @@ class SimpleShader extends ShaderProgram {
 }
 
 class SimpleTextureShader extends ShaderProgram {
-    constructor(gl, shaderConfigs) {
+    constructor(gl, shaderContext) {
+        const shaderConfigs = shaderContext.config || '';
         super(gl, ShaderName.SIMPLETEX, shaderConfigs + simpleTextureVertexShaderSource, shaderConfigs + simpleTextureFragmentShaderSource);
 
         this.positionLocation = gl.getAttribLocation(this.program, 'position');
@@ -393,7 +408,9 @@ class SimpleTextureShader extends ShaderProgram {
 
 
 class BasicShader extends ShaderProgram {
-    constructor(gl, shaderConfigs) {
+    constructor(gl, shaderContext) {
+        const shaderConfigs = shaderContext.config || '';
+        console.log(shaderConfigs);
         super(gl, ShaderName.BASIC, shaderConfigs + vertexShaderSource, shaderConfigs + fragmentShaderSource);
 
         this.positionLocation = gl.getAttribLocation(this.program, 'position');
@@ -406,8 +423,14 @@ class BasicShader extends ShaderProgram {
         // this.projectionMatrixLocation =  gl.getUniformLocation(this.program, 'projectionMatrix');
         this.viewMatrixLocation = gl.getUniformLocation(this.program, 'viewMatrix');
         this.normalMatrixLocation = gl.getUniformLocation(this.program, 'normalMatrix');
-        this.directionalLightDirLocation = gl.getUniformLocation(this.program, 'directionalLightDir');
-        this.directionalLightColorLocation = gl.getUniformLocation(this.program, 'directionalLightColor');
+        this.dirLightDirLocations = [];
+        this.dirLightColorLocations = [];
+        for (let i = 0; i < shaderContext.maxDirLights; i++) {
+            this.dirLightDirLocations[i] = gl.getUniformLocation(this.program, 'dirLights['+i+'].direction');
+            this.dirLightColorLocations[i] = gl.getUniformLocation(this.program, 'dirLights['+i+'].color');
+        }
+        // this.directionalLightDirLocation = gl.getUniformLocation(this.program, 'directionalLightDir');
+        //this.directionalLightColorLocation = gl.getUniformLocation(this.program, 'directionalLightColor');
         this.colorLocation = gl.getUniformLocation(this.program, 'color');
         this.cubeMapLocation = gl.getUniformLocation(this.program, 'uCubeMap');
         this.useTextureLocation = gl.getUniformLocation(this.program, 'useTexture');
@@ -471,8 +494,12 @@ class BasicShader extends ShaderProgram {
         gl.uniform1f(this.fogEndLocation, renderContext.fogEnd); // フォグが完全に不透明になる距離
 
         // 平行光源関連のユニフォーム変数を設定
-        gl.uniform3f(this.directionalLightDirLocation, ...renderContext.directionalLightDir); // 平行光源
-        gl.uniform3f(this.directionalLightColorLocation, ...renderContext.directionalLightColor); // 白色光源
+        for( let i=0; i< renderContext.dirLightNum; i++ ){
+            gl.uniform3f(this.dirLightDirLocations[i], ...renderContext.dirLights[i].direction);
+            gl.uniform3f(this.dirLightColorLocations[i], ...renderContext.dirLights[i].color);
+        }
+        // gl.uniform3f(this.directionalLightDirLocation, ...renderContext.directionalLightDir); // 平行光源
+        // gl.uniform3f(this.directionalLightColorLocation, ...renderContext.directionalLightColor); // 白色光源
 
         // 点光源関連のユニフォーム変数を設定
         gl.uniform3f(this.pointLightPositionLocation, ...renderContext.pointLightPosition); // 点光源の位置
@@ -497,7 +524,8 @@ class BasicShader extends ShaderProgram {
 
 
 class SkyBoxShader extends ShaderProgram {
-    constructor(gl, shaderConfigs) {
+    constructor(gl, shaderContext) {
+        const shaderConfigs = shaderContext.config || '';
         super(gl, ShaderName.SKYBOX, shaderConfigs + skybox_vertexShaderSource, shaderConfigs + skybox_fragmentShaderSource);
 
         this.position = gl.getAttribLocation(this.program, 'position')
@@ -548,7 +576,8 @@ class SkyBoxShader extends ShaderProgram {
 }
 
 class ParticleShader extends ShaderProgram {
-    constructor(gl, shaderConfigs) {
+    constructor(gl, shaderContext) {
+        const shaderConfigs = shaderContext.config || '';
         super(gl, ShaderName.PARTICLE, shaderConfigs + particleVertexShaderSource, shaderConfigs + particleFragmentShaderSource);
 
         this.positionLocation = gl.getAttribLocation(this.program, 'position');
@@ -599,13 +628,13 @@ class ParticleShader extends ShaderProgram {
 
 class ShaderManager {
     static _shaders;
-    constructor(gl, shaderConfigs) {
+    constructor(gl, shaderContext) {
         ShaderManager._shaders = {};
-        ShaderManager._shaders[ShaderName.BASIC] = new BasicShader(gl, shaderConfigs);
-        ShaderManager._shaders[ShaderName.PARTICLE] = new ParticleShader(gl, shaderConfigs);
-        ShaderManager._shaders[ShaderName.SKYBOX] = new SkyBoxShader(gl, shaderConfigs);
-        ShaderManager._shaders[ShaderName.SIMPLE] = new SimpleShader(gl, shaderConfigs);
-        ShaderManager._shaders[ShaderName.SIMPLETEX] = new SimpleTextureShader(gl, shaderConfigs);
+        ShaderManager._shaders[ShaderName.BASIC] = new BasicShader(gl, shaderContext);
+        ShaderManager._shaders[ShaderName.PARTICLE] = new ParticleShader(gl, shaderContext);
+        ShaderManager._shaders[ShaderName.SKYBOX] = new SkyBoxShader(gl, shaderContext);
+        ShaderManager._shaders[ShaderName.SIMPLE] = new SimpleShader(gl, shaderContext);
+        ShaderManager._shaders[ShaderName.SIMPLETEX] = new SimpleTextureShader(gl, shaderContext);
     }
 
     static shader(name) {

@@ -26,19 +26,13 @@ export class Renderer {
 
         this.shaderContext = {
             isFog: true,
+            maxDirLights: 4,
         };
 
         this.clearColor = [0.0, 0.0, 0.0, 1.0];
 
         this.usePointLight = true;
 
-    }
-
-    getDirectionLightDir(gl, scene) {
-        if (scene.lights.length == 0 || scene.lights[0].lightKind != "directional") {
-            return new Float32Array([0, 0, 0]);
-        }
-        return scene.lights[0].direction;
     }
 
     setupShaders(gl, shaderContext) {
@@ -49,9 +43,12 @@ export class Renderer {
         if( shaderContext.isSpecular ){
             shaderConfigs += "#define USE_SPECULAR\n";
         }
-
+        if( shaderContext.maxDirLights > 0 ){
+            shaderConfigs += `#define MAX_DIR_LIGHTS ${shaderContext.maxDirLights}\n`;
+        }
+        shaderContext.config = shaderConfigs;
         // Todo: Singleton化する
-        new ShaderManager(this.gl, shaderConfigs); // シェーダーの初期化
+        new ShaderManager(this.gl, shaderContext); // シェーダーの初期化
     }
 
     render(scene, camera) {
@@ -97,6 +94,8 @@ export class Renderer {
         // カリング用にフラスタムを更新
         this.frustum.extractPlanes(this.vpMtx);
 
+        const dirLights = scene.getDirectianlLights();
+        const pointLights = scene.getPointLights();
 
         scene.children.forEach((group) => {
 
@@ -117,8 +116,6 @@ export class Renderer {
                 });
             }
 
-            const directionalLightDir = this.getDirectionLightDir(gl, scene);
-            const pointLights = scene.getPointLights();
 
             culled.forEach((obj) => {
                 obj.updateMatrix(camera.projMtx, camera.mdlViewMtx, this.vpMtx);
@@ -149,8 +146,8 @@ export class Renderer {
                     alphaScale: 1.0, // 追加：アルファスケール
 
                     // 平行光源の情報
-                    directionalLightDir: directionalLightDir,
-                    directionalLightColor: scene.lights.length > 0 ? scene.lights[0].color : [1,1,1],
+                    dirLightNum: dirLights.length,
+                    dirLights: dirLights,
 
                     // 点光源の情報
                     usePointLight: this.usePointLight && pointLights.length > 0 ? 1 : 0,
