@@ -11,7 +11,9 @@
 - GLSL (WebGL2.0)
 - Node.js v20.19.6
   - Node.jsはビルドやテストに使用されるが、エンジン自体はブラウザ上で動作する。
-
+- ESModules
+  - import/export構文を使用してモジュールを管理している。
+- CommonJSは使用しない。
   
 
 
