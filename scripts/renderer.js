@@ -94,7 +94,8 @@ export class Renderer {
         // カリング用にフラスタムを更新
         this.frustum.extractPlanes(this.vpMtx);
 
-        const dirLights = scene.getDirectianlLights();
+        // ライト情報の取得
+        const dirLights = scene.getDirectionalLights();
         const pointLights = scene.getPointLights();
 
         scene.children.forEach((group) => {

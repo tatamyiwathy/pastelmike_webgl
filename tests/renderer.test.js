@@ -86,6 +86,7 @@ describe('Renderer', () => {
 			ambientColor: [0.2, 0.2, 0.2],
 			lights: [{ lightKind: 'directional', direction: [1, 0, 0], color: [1, 1, 1] }],
 			getPointLights: () => [],
+			getDirectionalLights: () => [],
 			children: [
 				{
 					sortOrder: 0,

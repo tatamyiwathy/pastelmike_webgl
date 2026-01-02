@@ -72,7 +72,7 @@ class Scene extends Object3d {
         });
     }
 
-    getDirectianlLights() {
+    getDirectionalLights() {
         return this.lights.filter(light => light.lightKind === "directional");
     }
 }

@@ -47,6 +47,17 @@ describe('Scene', () => {
     expect(points).not.toContain(dirLight);
   });
 
+  test('getDirectionalLightsでdirectionalライトのみ取得できる', () => {
+    const pointLight = new DummyLight('point');
+    const dirLight = new DummyLight('directional');
+    dirLight.lightKind = 'directional';
+    scene.add(pointLight, { layer: 0 });
+    scene.add(dirLight, { layer: 0 });
+    const points = scene.getDirectionalLights();
+    expect(points).toContain(dirLight);
+    expect(points).not.toContain(pointLight);
+  });
+
   test('disposeで各グループのdisposeが呼ばれる', () => {
     const mockDispose = vi.fn();
     scene.children.forEach(g => g.dispose = mockDispose);
