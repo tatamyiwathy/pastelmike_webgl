@@ -1,2 +1,2 @@
 test:
-	docker compose up test
+	npx vitest
