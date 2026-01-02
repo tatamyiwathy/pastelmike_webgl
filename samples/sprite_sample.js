@@ -1,0 +1,88 @@
+import { Renderer } from '../scripts/renderer.js';
+import { PointLight } from '../scripts/light.js';
+import { Scene } from '../scripts/scene.js';
+import { PerspectiveCamera } from '../scripts/camera.js';
+import {
+    create_sphere_geometry,
+    create_plain_geometry,
+} from '../scripts/geometry.js';
+import { MeshSpecularMaterial, MeshSimpleMaterial } from '../scripts/material.js';
+import { Mesh } from '../scripts/mesh.js';
+import { TextureLoader } from '../scripts/texture_loader.js';
+import { Animator } from '../scripts/object_3d.js';
+import { Sprite } from '../scripts/sprite.js';
+
+function main() {
+    const canvas = document.getElementById('canvas');
+    // canvas.width = window.innerWidth;
+    // canvas.height = window.innerHeight;
+
+    const renderer = new Renderer(canvas);
+    renderer.enableCulling = false;
+
+    const gl = renderer.gl;
+
+    const scene = new Scene();
+
+
+    const sphere_geometry = new create_sphere_geometry(gl);
+    const textureLoader = new TextureLoader();
+    const texture = textureLoader.load(gl, './assets/lroc_color_2k.jpg');
+    const materialContext = { textures: texture };
+    const sphere_material = new MeshSpecularMaterial(gl, materialContext);
+    sphere_material.useTexture = true;
+
+
+    class SphereRotator extends Animator {
+        constructor() {
+          super();
+          this.angle = 0;
+        }
+        update(obj, deltaTime) {
+            this.angle += deltaTime * 0.001;
+            obj.rotateY(this.angle);
+        }
+    }
+    const sphere_mesh1 = new Mesh(gl, sphere_geometry, sphere_material);
+    sphere_mesh1.animator = new SphereRotator();
+    sphere_mesh1.position = [2, 0, 0];
+    sphere_mesh1.material.color = [1, 1, 1, 1];
+    scene.add(sphere_mesh1);
+
+    const sphere_mesh2 = new Mesh(gl, sphere_geometry, sphere_material);
+    sphere_mesh2.animator = new SphereRotator();
+    sphere_mesh2.position = [-2, 0, 0];
+    sphere_mesh2.material.color = [1, 1, 1, 1];
+    scene.add(sphere_mesh2);
+
+    const light = new PointLight(gl);
+    scene.add(light);
+
+    const camera = new PerspectiveCamera(Math.PI / 2, canvas.width / canvas.height, 0.1, 100, {});
+    camera.position = [0, 0, 3];
+    camera.lookAt([0, 0, 0]);
+    scene.add(camera);
+
+    const plainGeometry = new create_plain_geometry(gl, 10);
+    const plainMaterial = new MeshSpecularMaterial(gl);
+    const plainMesh = new Mesh(gl, plainGeometry, plainMaterial);
+    plainMesh.position = [0, -2, 0];
+    scene.add(plainMesh);
+
+
+    const spriteTexture = textureLoader.load(gl, './assets/flare.png');
+    const sprite = new Sprite(gl, spriteTexture);
+    sprite.position = [0, 1.5, 0];
+    scene.add(sprite);
+
+    function render() {
+        renderer.render(scene, camera);
+        requestAnimationFrame(render);
+    }
+
+    render();
+}
+main();
+
+
+

@@ -59,11 +59,11 @@ function main() {
         size: 50,
         material: new MeshSimpleMaterial(gl),
     }
-    const plain_geometry = create_plain_geometry(gl, options.size);
-    const plain_material = new MeshSimpleMaterial(gl);
-    const plainMesh = new Mesh(gl, plain_geometry, plain_material);
-    plainMesh.material.color = [0.5, 0.5, 0.5, 1]; // グレーに設定
-    scene.add(plainMesh);
+    // const plain_geometry = create_plain_geometry(gl, options.size);
+    // const plain_material = new MeshSimpleMaterial(gl);
+    // const plainMesh = new Mesh(gl, plain_geometry, plain_material);
+    // plainMesh.material.color = [0.5, 0.5, 0.5, 1]; // グレーに設定
+    // scene.add(plainMesh);
 
     const objLoader = new ObjLoader();
     objLoader.load(gl, './assets/teapot.obj').then((obj) => {
@@ -104,10 +104,10 @@ function main() {
         }
         update(obj, deltaTime) {
             // ライトを上下に移動
-            const radius =5;
+            const radius =1.5;
             this.angle += ((Math.PI * 2) / 18) * deltaTime;
             obj.position[0] = 0;
-            obj.position[1] = radius * Math.sin(this.angle);;
+            obj.position[1] = radius * Math.sin(this.angle);
             obj.position[2] = 0;
         }
     }
@@ -117,6 +117,7 @@ function main() {
     const sprite = new Sprite(gl, spriteTexture);
     sprite.position = [0, 1, 0];
     sprite.rotateX(-Math.PI / 2);
+    sprite.animator = new LightAnimator();
     scene.add(sprite, {layer: 2});
 
 

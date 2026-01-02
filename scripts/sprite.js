@@ -12,7 +12,7 @@ class SpriteMaterial extends Material {
 
 class Sprite extends Mesh {
     constructor(gl, texture, options = {}) {
-        super('sprite', create_plain_geometry(gl, 1), new SpriteMaterial(texture));
+        super(gl, create_plain_geometry(gl, 1), new SpriteMaterial(texture));
     }
     updateMatrix(projMtx, viewMtx, vpMtx) {
         // 1. まず位置とスケールでワールド行列を作る
