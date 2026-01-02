@@ -56,7 +56,7 @@ function createMockGL() {
 }
 
 describe("ShaderManager", () => {
-  it("should initialize all shader types", () => {
+  test("should initialize all shader types", () => {
     const gl = createMockGL();
     const manager = new ShaderManager(gl, "");
     const names = Object.values(ShaderName);
@@ -68,7 +68,7 @@ describe("ShaderManager", () => {
 });
 
 describe("各Shaderクラスのインスタンス化", () => {
-  it("SimpleShader, SimpleTextureShader, BasicShader, SkyBoxShader, ParticleShaderが生成できる", () => {
+  test("SimpleShader, SimpleTextureShader, BasicShader, SkyBoxShader, ParticleShaderが生成できる", () => {
     const gl = createMockGL();
     const manager = new ShaderManager(gl, "");
     expect(ShaderManager.shader(ShaderName.SIMPLE)).toBeDefined();

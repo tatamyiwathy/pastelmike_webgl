@@ -4,12 +4,12 @@ import * as geometry from '../scripts/geometry.js';
 // サンプルテスト: 必要に応じて関数名やテスト内容を追加してください
 
 describe('geometry.js', () => {
-    it('モジュールが定義されている', () => {
+    test('モジュールが定義されている', () => {
         expect(geometry).toBeDefined();
     });
 
 
-    it('PointGeometryのインスタンスが生成できる', () => {
+    test('PointGeometryのインスタンスが生成できる', () => {
         const gl = { createBuffer: () => ({}), bindBuffer: () => { }, bufferData: () => { }, deleteBuffer: () => { } };
         const p = new geometry.PointGeometry(gl);
         expect(p).toBeInstanceOf(geometry.PointGeometry);
@@ -20,7 +20,7 @@ describe('geometry.js', () => {
 
 
 
-    it('Geometryの初期値', () => {
+    test('Geometryの初期値', () => {
         // glのダミー
         const gl = {
             createBuffer: () => ({}),
@@ -38,7 +38,7 @@ describe('geometry.js', () => {
         expect(g.wire_indices_len).toBe(0);
     });
 
-    it('dispose: VBO/IBOのdisposeが呼ばれる', () => {
+    test('dispose: VBO/IBOのdisposeが呼ばれる', () => {
         // 各VBO/IBOにdisposeが呼ばれるか確認
         const called = { v: false, n: false, uv: false, tri: false, wire: false };
         function makeVBO() { return { dispose: () => { called.v = true; } }; }
@@ -62,7 +62,7 @@ describe('geometry.js', () => {
         expect(called.wire).toBe(true);
     });
 
-    it('generateIndexForWireframe: ワイヤーフレームインデックス生成', () => {
+    test('generateIndexForWireframe: ワイヤーフレームインデックス生成', () => {
         const gl = { createBuffer: () => ({}), bindBuffer: () => { }, bufferData: () => { }, deleteBuffer: () => { } };
         const g = new geometry.Geometry(gl);
         // 三角形1つ（0,1,2）
@@ -73,7 +73,7 @@ describe('geometry.js', () => {
     });
 
 
-    it('create_torus_geometoryでGeometryが生成できる', () => {
+    test('create_torus_geometoryでGeometryが生成できる', () => {
         const gl = { createBuffer: () => ({}), bindBuffer: () => { }, bufferData: () => { }, deleteBuffer: () => { } };
         const torus = geometry.create_torus_geometory(gl);
         expect(torus).toBeInstanceOf(geometry.Geometry);
@@ -85,7 +85,7 @@ describe('geometry.js', () => {
     });
 
 
-    it('create_sphere_geometryでGeometryが生成できる', () => {
+    test('create_sphere_geometryでGeometryが生成できる', () => {
         const gl = { createBuffer: () => ({}), bindBuffer: () => { }, bufferData: () => { }, deleteBuffer: () => { } };
         const sphere = geometry.create_sphere_geometry(gl);
         expect(sphere).toBeInstanceOf(geometry.Geometry);
@@ -96,7 +96,7 @@ describe('geometry.js', () => {
         expect(sphere.tri_indices_len).toBeGreaterThan(0);
     });
 
-    it('create_cube_geometryでGeometryが生成できる', () => {
+    test('create_cube_geometryでGeometryが生成できる', () => {
         const gl = { createBuffer: () => ({}), bindBuffer: () => {}, bufferData: () => {}, deleteBuffer: () => {} };
         const cube = geometry.create_cube_geometry(gl, 1, 1, 1);
         expect(cube).toBeInstanceOf(geometry.Geometry);
@@ -107,7 +107,7 @@ describe('geometry.js', () => {
         expect(cube.tri_indices_len).toBeGreaterThan(0);
     });
 
-    it('create_plain_geometryでGeometryが生成できる', () => {
+    test('create_plain_geometryでGeometryが生成できる', () => {
         const gl = { createBuffer: () => ({}), bindBuffer: () => {}, bufferData: () => {}, deleteBuffer: () => {} };
         const cube = geometry.create_plain_geometry(gl, 1);
         expect(cube).toBeInstanceOf(geometry.Geometry);
