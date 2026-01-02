@@ -60,7 +60,7 @@ class Geometry {
 
     generateIndexForWireframe(indices) {
         if (!indices) {
-            return null;
+            throw new Error('IBOのインデックスデータがありません');
         }
         const wireframeIndices = [];
         const edgeSet = {};
@@ -348,3 +348,4 @@ function create_triangle_geometry(gl) {
 
 
 export { Geometry, PointGeometry, create_torus_geometory, create_sphere_geometry, create_cube_geometry, create_plain_geometry, create_triangle_geometry };
+export { VBO, IBO };
