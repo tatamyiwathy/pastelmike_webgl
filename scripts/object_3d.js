@@ -158,6 +158,14 @@ class Object3d {
         child.parent = this;
         this.children.push(child);
     }
+
+    lookAt(target) {
+        const t = vec3.create();
+        t[0] = target[0];
+        t[1] = target[1];
+        t[2] = target[2];
+        mat4.lookAt(this.worldMtx, this.position, t, this.up);
+    }
 }
 
 export { Object3d, Animator };

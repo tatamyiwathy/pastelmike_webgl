@@ -13,6 +13,7 @@ import { Animator } from '../scripts/object_3d.js';
 function main() {
     const canvas = document.getElementById('canvas');
     const renderer = new Renderer(canvas);
+    renderer.clearColor = [0.2, 0.2, 0.4, 1.0];
     const gl = renderer.gl;
     const scene = new Scene();
 
@@ -40,7 +41,7 @@ function main() {
     const cameraRotater = new CameraRotater();
     camera.position = [3, 2, 3];
     camera.lookAt([0, 0, 0]);
-    camera.animator = cameraRotater;
+    //camera.animator = cameraRotater;
     scene.add(camera);
 
     const plain_geometory = create_plain_geometry(gl, 20);
@@ -48,6 +49,23 @@ function main() {
     const plainMesh = new Mesh(gl, plain_geometory, plain_material);
     plainMesh.position = [0, 0, 0];
     scene.add(plainMesh);
+
+
+    class LightRotater extends Animator {
+        constructor() {
+            super();
+            this.angle = 0;
+        }
+
+        update(obj, deltaTime) {
+            this.angle += deltaTime * 0.2;
+            const radius = 50;
+            const x = Math.sin(this.angle) * radius;
+            const z = Math.cos(this.angle) * radius;
+            obj.position = [x, 50, z];
+            obj.direction = [-x, -50, -z];
+        }
+    }
 
     const dlight = new DirectionLight(gl, {
         direction: [0, -1, -1],
@@ -59,6 +77,7 @@ function main() {
         near: 1.0,
         far: 200,
     });
+    dlight.animator = new LightRotater();
     scene.add(dlight);
 
     const cube_geometry = create_cube_geometry(gl, 1, 1, 1);
