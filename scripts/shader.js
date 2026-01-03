@@ -10,6 +10,7 @@ const ShaderName = {
     SIMPLE: 'simple',
     SIMPLETEX: 'simpletex',
     SHADOWMAP: 'shadowmap',
+    DEBUG_DEPTH: 'debug_depth',
 };
 
 // シンプルシェーダー
@@ -174,16 +175,22 @@ const fragmentShaderSource = `
         // ------------------        
 
 
-        // 3. シャドウマップから一番手前の深度を取得
-        float closestDepth = texture(shadowMap, projCoords.xy).r;
-        
-        // 4. 現在のピクセルの深度
-        float currentDepth = projCoords.z;
-        
-        // 5. 比較して影かどうかを判定
-        // 現在の深さが、マップの深さより大きければ影
-        float shadow = currentDepth > closestDepth ? 0.0 : 1.0;
-        
+        // 3. バイアスでアクネを低減
+        float bias = 0.0015;
+
+        // 4. 簡易PCF (3x3)
+        vec2 texelSize = 1.0 / vec2(textureSize(shadowMap, 0));
+        float occlusion = 0.0;
+        for (int x = -1; x <= 1; ++x) {
+            for (int y = -1; y <= 1; ++y) {
+                float closestDepth = texture(shadowMap, projCoords.xy + vec2(x, y) * texelSize).r;
+                float currentDepth = projCoords.z - bias;
+                occlusion += currentDepth > closestDepth ? 1.0 : 0.0;
+            }
+        }
+        occlusion /= 9.0;
+
+        float shadow = 1.0 - occlusion;
         return shadow;
     }
     
@@ -356,6 +363,34 @@ void main() {
     // WebGL 2.0 + 深度アタッチメントのみの場合、
     // 何も書かなくても自動的に深度が書き込まれます。
     // (空でOKです)
+}
+`;
+
+// デバッグ用：深度テクスチャ可視化シェーダー
+const debugDepth_vertexShaderSource = `
+layout(location = 0) in vec2 a_position;
+layout(location = 1) in vec2 a_texcoord;
+
+out vec2 v_texcoord;
+
+void main() {
+    v_texcoord = a_texcoord;
+    gl_Position = vec4(a_position, 0.0, 1.0);
+}
+`;
+
+const debugDepth_fragmentShaderSource = `
+precision highp float;
+
+in vec2 v_texcoord;
+out vec4 outColor;
+
+uniform sampler2D u_depthTexture;
+
+void main() {
+    float depth = texture(u_depthTexture, v_texcoord).r;
+    // 深度値を可視化（0.0=黒, 1.0=白）
+    outColor = vec4(vec3(depth), 1.0);
 }
 `;
 
@@ -744,6 +779,41 @@ class ShadowMapShader extends ShaderProgram {
         gl.uniformMatrix4fv(this.modelMatrixLocation, false, renderContext.modelMatrix);
     }
 }
+
+class DebugDepthShader extends ShaderProgram {
+    constructor(gl, shaderContext) {
+        const shaderConfigs = shaderContext.config || '';
+        super(gl, 'debug_depth', shaderConfigs + debugDepth_vertexShaderSource, shaderConfigs + debugDepth_fragmentShaderSource);
+        this.positionLocation = gl.getAttribLocation(this.program, 'a_position');
+        this.texcoordLocation = gl.getAttribLocation(this.program, 'a_texcoord');
+        this.depthTextureLocation = gl.getUniformLocation(this.program, 'u_depthTexture');
+    }
+    render(gl, positionBuffer, texcoordBuffer, depthTexture) {
+        this.useProgram(gl);
+
+        // 位置属性
+        gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
+        gl.enableVertexAttribArray(this.positionLocation);
+        gl.vertexAttribPointer(this.positionLocation, 2, gl.FLOAT, false, 0, 0);
+
+        // UV座標属性
+        gl.bindBuffer(gl.ARRAY_BUFFER, texcoordBuffer);
+        gl.enableVertexAttribArray(this.texcoordLocation);
+        gl.vertexAttribPointer(this.texcoordLocation, 2, gl.FLOAT, false, 0, 0);
+
+        // 深度テクスチャをバインド
+        gl.activeTexture(gl.TEXTURE0);
+        gl.bindTexture(gl.TEXTURE_2D, depthTexture);
+        gl.uniform1i(this.depthTextureLocation, 0);
+
+        // 描画
+        gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+
+        // クリーンアップ
+        gl.disableVertexAttribArray(this.positionLocation);
+        gl.disableVertexAttribArray(this.texcoordLocation);
+    }
+}
 class ShaderManager {
     static _shaders;
     constructor(gl, shaderContext) {
@@ -754,6 +824,7 @@ class ShaderManager {
         ShaderManager._shaders[ShaderName.SIMPLE] = new SimpleShader(gl, shaderContext);
         ShaderManager._shaders[ShaderName.SIMPLETEX] = new SimpleTextureShader(gl, shaderContext);
         ShaderManager._shaders[ShaderName.SHADOWMAP] = new ShadowMapShader(gl, shaderContext);
+        ShaderManager._shaders[ShaderName.DEBUG_DEPTH] = new DebugDepthShader(gl, shaderContext);
     }
 
     static shader(name) {

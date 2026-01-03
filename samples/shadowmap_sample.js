@@ -16,6 +16,9 @@ function main() {
     const gl = renderer.gl;
     const scene = new Scene();
 
+    // デバッグモード: シャドウマップを画面右下に表示
+    renderer.debugShadowMap = true;
+
 
     class CameraRotater extends Animator {
         constructor() {

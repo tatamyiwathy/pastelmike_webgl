@@ -11,9 +11,10 @@ function createShadowFramebuffer(gl, size) {
     const depthTexture = gl.createTexture();
     gl.bindTexture(gl.TEXTURE_2D, depthTexture);
     
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_COMPARE_MODE, gl.NON);  // 比較モード無効化
+    // 比較モード無効化（デバッグ時は通常のテクスチャとして読む）
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_COMPARE_MODE, gl.NONE);
     
-        // WebGL 2.0なので DEPTH_COMPONENT24 が使用可能
+    // WebGL 2.0なので DEPTH_COMPONENT24 が使用可能
     gl.texImage2D(
         gl.TEXTURE_2D, 0, gl.DEPTH_COMPONENT24,
         size, size, 0,
@@ -66,6 +67,6 @@ function createShadowFramebuffer(gl, size) {
     gl.bindFramebuffer(gl.FRAMEBUFFER, null);
     gl.bindTexture(gl.TEXTURE_2D, null);
 
-    return { framebuffer, depthTexture };
+    return { framebuffer, texture: depthTexture };
 }
 export { createShadowFramebuffer };

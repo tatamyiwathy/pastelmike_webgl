@@ -6,7 +6,8 @@ import { createShadowFramebuffer } from './offscreen.js';
 class DirectionLight extends Object3d {
     constructor(gl, args = {}) {
         super('light');
-        // this.position = args.position || [0, 10, 0]; Object3dのpositionを使用
+        // 位置を設定（指定がなければ上空のデフォルト位置）
+        this.position = args.position || [0, 10, 0];
         this._direction = args.direction || [0, -1, 0];
         this.color = args.color || [1, 1, 1]; // 白色光源
         this.lightKind = "directional";
@@ -49,8 +50,9 @@ class DirectionLight extends Object3d {
         if (!this.enableShadow) {
             return;
         }
-        //const target = vec3.add(vec3.create(), this.position, this.direction);
-        const target = [0,0,0];
+        // ライト位置 + 方向ベクトルを注視点とする
+        const target = vec3.create();
+        vec3.add(target, this.position, this.direction);
         const lightViewMatrix = mat4.lookAt(mat4.create(), this.position, target, this.up);
         const size = this.shadowBoxSize; // ライトがカバーする範囲（半径）
         const lightProjectionMatrix = mat4.ortho(mat4.create(), -size, size, -size, size, this.near, this.far);

@@ -33,6 +33,10 @@ export class Renderer {
 
         this.usePointLight = true;
 
+        // デバッグモード
+        this.debugShadowMap = false;
+        this.debugQuadBuffers = null;
+
     }
 
     setupShaders(gl, shaderContext) {
@@ -98,10 +102,25 @@ export class Renderer {
         const dirLights = scene.getDirectionalLights();
         const pointLights = scene.getPointLights();
 
+        // シャドウマップのレンダリング（全グループのオブジェクトを集める）
+        const allRenderableObjects = [];
+        scene.children.forEach((group) => {
+            const objs = group.children.filter(obj => obj.isRenderTarget);
+            allRenderableObjects.push(...objs);
+        });
+        
+        dirLights.forEach((light) => {
+            if (light.enableShadow) {
+                light.updateMatrix(camera.projMtx, camera.mdlViewMtx, this.vpMtx);
+                this.renderShadowMap(gl, allRenderableObjects, light);
+            }
+        });
+
         scene.children.forEach((group) => {
 
             // レンダー対象のオブジェクトを抽出
             const objs = group.children.filter(obj => obj.isRenderTarget);
+            
             // カリング
             const culled = this.enableCulling ? this.frustumCulling(objs) : objs;
 
@@ -123,14 +142,10 @@ export class Renderer {
                 obj.updateMatrix(camera.projMtx, camera.mdlViewMtx, this.vpMtx);
             });
 
-            // シャドウマップのレンダリング
-            dirLights.forEach((light) => {
-                if (light.enableShadow) {
-                    light.updateMatrix(camera.projMtx, camera.mdlViewMtx, this.vpMtx);
-
-                    this.renderShadowMap(gl, culled, light);
-                }
-            });
+            // デバッグ: シャドウマップ可視化
+            if (this.debugShadowMap && dirLights.length > 0 && dirLights[0].enableShadow) {
+                this.renderDebugShadowMap(gl, dirLights[0]);
+            }
 
             // オブジェクトの描画
             culled.forEach((obj) => {
@@ -185,7 +200,73 @@ export class Renderer {
         });
     }
 
+    createDebugQuadBuffers(gl) {
+        // デバッグ用：画面右下に小さく表示する矩形の頂点（NDC座標: -1~1）
+        const positions = new Float32Array([
+            0.6,  1.0,   // 右上
+            1.0,  1.0,   // さらに右上
+            0.6,  0.6,   // 右下
+            1.0,  0.6,   // さらに右下
+        ]);
+
+        const texcoords = new Float32Array([
+            0.0, 1.0,
+            1.0, 1.0,
+            0.0, 0.0,
+            1.0, 0.0,
+        ]);
+
+        const positionBuffer = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
+        gl.bufferData(gl.ARRAY_BUFFER, positions, gl.STATIC_DRAW);
+
+        const texcoordBuffer = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, texcoordBuffer);
+        gl.bufferData(gl.ARRAY_BUFFER, texcoords, gl.STATIC_DRAW);
+
+        return { positionBuffer, texcoordBuffer };
+    }
+
+    renderDebugShadowMap(gl, light) {
+        console.log('=== Debug Shadow Map Rendering Start ===');
+        
+        if (!this.debugQuadBuffers) {
+            this.debugQuadBuffers = this.createDebugQuadBuffers(gl);
+            console.log('Debug quad buffers created');
+        }
+
+        console.log('Light texture:', light.texture);
+        console.log('Framebuffer:', light.frameBuffer);
+
+        // 深度テストを無効化（オーバーレイとして描画）
+        gl.disable(gl.DEPTH_TEST);
+
+        const shader = ShaderManager.shader(ShaderName.DEBUG_DEPTH);
+        console.log('Debug shader:', shader);
+        
+        try {
+            shader.render(
+                gl,
+                this.debugQuadBuffers.positionBuffer,
+                this.debugQuadBuffers.texcoordBuffer,
+                light.texture
+            );
+            console.log('Debug render completed');
+        } catch (e) {
+            console.error('Debug render failed:', e);
+        }
+
+        // 深度テストを再度有効化
+        gl.enable(gl.DEPTH_TEST);
+        
+        console.log('=== Debug Shadow Map Rendering End ===');
+    }
+
     renderShadowMap(gl, objs, light) {
+        console.log('=== Shadow Map Rendering Start ===');
+        console.log('Light:', light);
+        console.log('Objects to render:', objs.length);
+        
         //function renderShadowPass(gl, shadowFBO, scene, light) {
         // 1. フレームバッファをバインド
         gl.bindFramebuffer(gl.FRAMEBUFFER, light.frameBuffer);
@@ -201,22 +282,47 @@ export class Renderer {
         // gl.enable(gl.CULL_FACE);
         // gl.cullFace(gl.FRONT); // 表面を消して背面だけを描く手法がよく使われます
 
+        // ポリゴンオフセットでシャドウアクネを低減
+        gl.enable(gl.POLYGON_OFFSET_FILL);
+        gl.polygonOffset(1.0, 1.0);
+
         // シーン内の全オブジェクトを描画
+        let rendered = 0;
         objs.forEach((obj) => {
+            if (obj.type !== 'mesh') return;
+            
             Renderer.renderContext = {
                 // ライトのビュー行列と射影行列を使って計算した行列
                 lightSpaceMatrix: light.lightSpaceMatrix,
                 modelMatrix: obj.worldMtx,
             }
             const shader = ShaderManager.shader(ShaderName.SHADOWMAP);
-            shader.render(this.gl, Renderer.renderContext, obj.geometry)
+            shader.render(this.gl, Renderer.renderContext, obj.geometry);
+            
+            // インデックスバッファをバインドして描画
+            if (obj.geometry.tri_ibo) {
+                gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, obj.geometry.tri_ibo.buffer);
+                gl.drawElements(gl.TRIANGLES, obj.geometry.tri_indices_len, gl.UNSIGNED_INT, 0);
+                rendered++;
+                
+                // WebGLエラーチェック
+                const error = gl.getError();
+                if (error !== gl.NO_ERROR) {
+                    console.error('WebGL Error during shadow map rendering:', error);
+                }
+            }
         });
+        
+        console.log('Actually rendered:', rendered, 'objects');
 
         // 6. 設定を元に戻す
+        gl.disable(gl.POLYGON_OFFSET_FILL);
         gl.cullFace(gl.BACK); // 通常の描画に戻す
         gl.bindFramebuffer(gl.FRAMEBUFFER, null);
         // ビューポートもメイン描画用に復元（追加）
         gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
+        
+        console.log('=== Shadow Map Rendering End ===');
     }
 
 
