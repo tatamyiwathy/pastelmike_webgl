@@ -131,6 +131,7 @@ const fragmentShaderSource = `
     struct DirectionalLight {
         vec3 direction;
         vec3 color;
+        bool enabled;
     };
     uniform DirectionalLight dirLights[MAX_DIR_LIGHTS];
     uniform int dirLightCount;
@@ -155,6 +156,8 @@ const fragmentShaderSource = `
         for (int i = 0; i < MAX_DIR_LIGHTS; ++i) {
             if (i >= dirLightCount) break;
 
+            if (!dirLights[i].enabled) continue;
+            
             vec3 Ld = normalize(dirLights[i].direction);
             
             //拡散反射
@@ -425,9 +428,11 @@ class BasicShader extends ShaderProgram {
         this.normalMatrixLocation = gl.getUniformLocation(this.program, 'normalMatrix');
         this.dirLightDirLocations = [];
         this.dirLightColorLocations = [];
+        this.dirLightEnableLocations = [];
         for (let i = 0; i < shaderContext.maxDirLights; i++) {
             this.dirLightDirLocations[i] = gl.getUniformLocation(this.program, 'dirLights[' + i + '].direction');
             this.dirLightColorLocations[i] = gl.getUniformLocation(this.program, 'dirLights[' + i + '].color');
+            this.dirLightEnableLocations[i] = gl.getUniformLocation(this.program, 'dirLights[' + i + '].enabled');
         }
         this.dirLightCountLocation = gl.getUniformLocation(this.program, 'dirLightCount');
         // this.directionalLightDirLocation = gl.getUniformLocation(this.program, 'directionalLightDir');
@@ -498,6 +503,7 @@ class BasicShader extends ShaderProgram {
         for (let i = 0; i < renderContext.dirLightNum; i++) {
             gl.uniform3f(this.dirLightDirLocations[i], ...renderContext.dirLights[i].direction);
             gl.uniform3f(this.dirLightColorLocations[i], ...renderContext.dirLights[i].color);
+            gl.uniform1i(this.dirLightEnableLocations[i], renderContext.dirLights[i].enabled ? 1 : 0);
         }
         gl.uniform1i(this.dirLightCountLocation, renderContext.dirLightNum);
         // gl.uniform3f(this.directionalLightDirLocation, ...renderContext.directionalLightDir); // 平行光源

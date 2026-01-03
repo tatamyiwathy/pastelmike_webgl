@@ -12,6 +12,7 @@ class Animator {
 
 class Object3d {
     constructor(type = '', options = {}) {
+        this.enabled = true;    // 機能が有効かどうか（ライトが点灯）
         this.type = type;   //
 
         this._position = new Float32Array([0, 0, 0]);
@@ -34,6 +35,8 @@ class Object3d {
 
         this.parent = null;
         this.children = [];
+
+        this.tagName = options.tagName || '';
     }
 
     get position(){

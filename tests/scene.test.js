@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, test } from 'vitest';
 import { Scene, ObjGroup } from '../scripts/scene.js';
 import { Object3d } from '../scripts/object_3d.js';
 
@@ -91,4 +91,15 @@ describe('Scene', () => {
       });
     });
   });
+
+  test('tagNameでオブジェクトを検索できる', () => {
+    const obj1 = new Object3d('obj1', { tagName: 'tag1' });
+    const obj2 = new Object3d('obj2', { tagName: 'tag2' });
+    scene.add(obj1, { layer: 0 });
+    scene.add(obj2, { layer: 1 });
+    const results = scene.findByTagName('tag1');
+    expect(results).toContain(obj1);
+    expect(results).not.toContain(obj2);
+  });
 });
+

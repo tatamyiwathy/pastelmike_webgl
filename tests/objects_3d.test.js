@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, test } from 'vitest';
 import { Object3d, Animator } from '../scripts/object_3d.js';
 
 describe('Object3d', () => {
@@ -103,6 +103,12 @@ describe('Object3d', () => {
     expect(obj.clip).toBeInstanceOf(Float32Array);
     // clip座標は[1,2,3,1]に近い（単位行列なので）
     [1,2,3,1].forEach((v,i)=>expect(obj.clip[i]).toBeCloseTo(v));
+  });
+
+
+  test('tagNameが設定できる', () => {
+    const obj = new Object3d('test', { tagName: 'myTag' });
+    expect(obj.tagName).toBe('myTag');
   });
 });
 

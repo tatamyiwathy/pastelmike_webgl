@@ -76,6 +76,18 @@ class Scene extends Object3d {
         });
     }
 
+    findByTagName(tagName) {
+        let result = [];
+        this.children.forEach((group) => {
+            group.children.forEach((obj) => {
+                if (obj.tagName === tagName) {
+                    result.push(obj);
+                }
+            });
+        });
+        return result;
+    }
+
 }
 
 export { Scene, ObjGroup };
