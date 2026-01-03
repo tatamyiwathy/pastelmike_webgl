@@ -143,12 +143,14 @@ function create_torus_geometory(gl, radius = 1, tubeRadius = 0.4, radialSegments
 function create_sphere_geometry(gl, radius = 1, sectors = 32, rings = 16) {
     const vertices = [];
     const normals = [];
-    const vus = [];
+    const uvs = [];
     const indices = [];
 
     for (let i = 0; i <= rings; i++) { // 緯度方向
+        const v = i / rings;  // 0.0 to 1.0
         const phi = Math.PI * i / rings - Math.PI / 2.0;
         for (let j = 0; j <= sectors; j++) { // 経度方向
+            const u = j / sectors;  // 0.0 to 1.0
             const theta = 2.0 * Math.PI * j / sectors;
 
             // 頂点座標 (Position)
@@ -163,22 +165,22 @@ function create_sphere_geometry(gl, radius = 1, sectors = 32, rings = 16) {
             const ny = y / radius;
             const nz = z / radius;
             normals.push(nx, ny, nz);
+
+            // UV座標
+            uvs.push(u, v);
         }
     }
 
     for (let i = 0; i < rings; i++) {
-        const v = i / rings;  // 0.0 to 1.0
         for (let j = 0; j < sectors; j++) {
-            const u = j / sectors  // 0.0 to 1.0
             const first = (i * (sectors + 1)) + j;
             const second = first + sectors + 1;
             indices.push(first, second, first + 1);
             indices.push(second, second + 1, first + 1);
-            vus.push(u, v);
         }
     }
 
-    return new Geometry(gl, new Float32Array(vertices), new Float32Array(normals), new Float32Array(vus), new Uint32Array(indices));
+    return new Geometry(gl, new Float32Array(vertices), new Float32Array(normals), new Float32Array(uvs), new Uint32Array(indices));
 }
 
 function createMeshData(vtx, nrm, vt, faces) {
