@@ -167,7 +167,7 @@ const fragmentShaderSource = `
         projCoords = projCoords * 0.5 + 0.5;
         
         // 3. シャドウマップから一番手前の深度を取得
-        float closestDepth = texture(u_shadowMap, projCoords.xy).r;
+        float closestDepth = texture(shadowMap, projCoords.xy).r;
         
         // 4. 現在のピクセルの深度
         float currentDepth = projCoords.z;
@@ -187,6 +187,7 @@ const fragmentShaderSource = `
 
         vec3 totalDiffuse = vec3(0.0);
         vec3 totalSpecular = vec3(0.0);
+
 
         for (int i = 0; i < MAX_DIR_LIGHTS; ++i) {
             if (i >= dirLightCount) break;
@@ -221,14 +222,17 @@ const fragmentShaderSource = `
 
         // 最終的な色の合成
         vec4 baseColor = vec4(totalDiffuse + totalSpecular, 1.0) * color;
+
+        float shadow = calculateShadow();
+        baseColor *= shadow; // 影の影響を乗算
+
         if (useTexture) {
             // 頂点シェーダーから渡されたUV座標をそのまま使う
             baseColor *= texture(samples, v_texcoord);
         }
         vec4 combinedColor = vec4(baseColor.rgb + (ambientLightColor * color.rgb), baseColor.a);
 
-        float shadow = calculateShadow();
-        outColor = vec4(combinedColor.rgb * shadow, combinedColor.a);
+        outColor = combinedColor;
 
         // --- 3. フォグ (Fog) ---
 #ifdef USE_FOG
@@ -338,7 +342,6 @@ void main() {
     `;
 
 const shadowmap_fragmentShaderSource = `
-#version 300 es
 precision highp float;
 
 void main() {
@@ -588,10 +591,14 @@ class BasicShader extends ShaderProgram {
         gl.uniform3f(this.ambientLightColorLocation, ...renderContext.ambientLightColor); // 環境光の色
 
         // 影
-        gl.uniformMatrix4fv(this.lightSpaceMatrixLocation, false, renderContext.lightSpaceMatrix);
-        gl.activeTexture(gl.TEXTURE0 + SHADOWMAP_SLOT); 
-        gl.bindTexture(gl.TEXTURE_2D, renderContext.shadowMapTexture);
-        gl.uniform1i(this.shadowMapLocation, SHADOWMAP_SLOT); // シャドウマップはテクスチャユニット1にバインド
+        if( renderContext.dirLights.length > 0 && renderContext.dirLights[0].enableShadow) {
+            // とりあえずライトは0番だけ
+            const light = renderContext.dirLights[0];
+            gl.uniformMatrix4fv(this.lightSpaceMatrixLocation, false, light.lightSpaceMatrix);
+            gl.activeTexture(gl.TEXTURE0 + SHADOWMAP_SLOT); 
+            gl.bindTexture(gl.TEXTURE_2D, light.texture);
+            gl.uniform1i(this.shadowMapLocation, SHADOWMAP_SLOT); // シャドウマップはテクスチャユニット1にバインド
+        }
 
         if (renderContext.wireFrame) {
             gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, geometry.wire_ibo.buffer);

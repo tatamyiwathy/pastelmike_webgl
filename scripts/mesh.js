@@ -6,7 +6,7 @@ class Mesh extends Object3d {
 
         this.geometry = geometry;
         this.material = material;
-        this.isRenderTarget = true;
+        this.isRenderTarget = true; // レンダー対象として扱う
     }
 
     dispose(gl) {

@@ -1,5 +1,4 @@
-import { mat3 } from 'gl-matrix';
-import { mat4, vec3, vec4, quat, glMatrix } from gl - matrix';
+import { mat4, vec3} from 'gl-matrix';
 import { Object3d } from './object_3d.js';
 import { createShadowFramebuffer } from './offscreen.js';
 
@@ -17,11 +16,13 @@ class DirectionLight extends Object3d {
         if (this.enableShadow) {
             this.near = args.near || 1.0;
             this.far = args.far || 50.0;
-            this.enableShadow = args.enableShadow || false;
+
             this.shadowBoxSize = args.shadowBoxSize || 10; // シャドウマップに含める範囲の半分の長さ
             this.lightSpaceMatrix = mat4.create();
 
-            this.frameBuffer, this.texture = createShadowFramebuffer(gl, 1024, 1024);
+            const {framebuffer, texture} = createShadowFramebuffer(gl, 1024);
+            this.frameBuffer = framebuffer;
+            this.texture = texture;
             this.frameBufferSize = 1024;
         }
     }
@@ -36,11 +37,11 @@ class DirectionLight extends Object3d {
         if (v instanceof Float32Array) {
             this._direction = v;
         } else if (Array.isArray(v)) {
-            this._direction = glMatrix.vec3.fromValues(...v);
+            this._direction = vec3.fromValues(...v);
         } else {
             throw new Error('direction must be Float32Array or array');
         }
-        glMatrix.vec3.normalize(this._direction, this._direction);
+        vec3.normalize(this._direction, this._direction);
     }
 
     updateMatrix(projection, view, proj_view) {

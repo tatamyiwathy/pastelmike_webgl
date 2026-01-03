@@ -37,14 +37,27 @@ function createShadowFramebuffer(gl, size) {
         0
     );
 
+
+// 2. 【デバッグ用追加】カラーテクスチャもとりあえず貼ってみる
+    // これでエラーが消えるなら、環境が「カラー無し」に対応していません
+    /*
+    const colorTexture = gl.createTexture();
+    gl.bindTexture(gl.TEXTURE_2D, colorTexture);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, size, size, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
+    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, colorTexture, 0);
+    */
+
+
     // 4. カラーバッファ出力を無効化（WebGL 2.0の最適化）
     gl.drawBuffers([gl.NONE]);
     gl.readBuffer(gl.NONE);
 
     // ステータスチェック
     const status = gl.checkFramebufferStatus(gl.FRAMEBUFFER);
-    if (status !== gl.SUCCESS) {
-        console.error("Framebuffer is incomplete:", status);
+    console.log("Shadow Framebuffer status:", status);
+    if (status !== gl.FRAMEBUFFER_COMPLETE){
+        // console.error("Framebuffer is incomplete:", status);
+        throw new Error('Framebuffer is incomplete: ' + status);
     }
 
     // バインドを解除

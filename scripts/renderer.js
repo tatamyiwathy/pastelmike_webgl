@@ -13,7 +13,7 @@ export class Renderer {
             alert('WebGL not supported');
             return;
         }
-        
+
         this.readyShader = false;
 
         this.frustum = new Frustum();
@@ -37,13 +37,13 @@ export class Renderer {
 
     setupShaders(gl, shaderContext) {
         let shaderConfigs = "#version 300 es\n";
-        if( shaderContext.isFog ){
+        if (shaderContext.isFog) {
             shaderConfigs += "#define USE_FOG\n";
         }
-        if( shaderContext.isSpecular ){
+        if (shaderContext.isSpecular) {
             shaderConfigs += "#define USE_SPECULAR\n";
         }
-        if( shaderContext.maxDirLights > 0 ){
+        if (shaderContext.maxDirLights > 0) {
             shaderConfigs += `#define MAX_DIR_LIGHTS ${shaderContext.maxDirLights}\n`;
         }
         shaderContext.config = shaderConfigs;
@@ -57,8 +57,8 @@ export class Renderer {
         // オブジェクトのモデル行列を更新
         scene.updateFrame(this.clock.elapsedTime());
 
-        
-        if( this.readyShader == false ) {
+
+        if (this.readyShader == false) {
             this.shaderContext.isFog = scene.isFog ? true : false;
             console.log("Shader isFog:", this.shaderContext.isFog);
 
@@ -89,7 +89,7 @@ export class Renderer {
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
 
-        mat4.multiply( this.vpMtx, camera.projMtx, camera.mdlViewMtx);
+        mat4.multiply(this.vpMtx, camera.projMtx, camera.mdlViewMtx);
 
         // カリング用にフラスタムを更新
         this.frustum.extractPlanes(this.vpMtx);
@@ -100,30 +100,39 @@ export class Renderer {
 
         scene.children.forEach((group) => {
 
+            // レンダー対象のオブジェクトを抽出
+            const objs = group.children.filter(obj => obj.isRenderTarget);
             // カリング
-            const culled = this.enableCulling ? this.frustumCulling(group.children) : group.children;
+            const culled = this.enableCulling ? this.frustumCulling(objs) : objs;
 
-            dirLights.forEach( (light) => {
-                renderShadowMap(scene, light, light.texture);
-            }
-
-
-            if( group.sortOrder == ObjGroup.SortOrderKind.DESC ) {
+            if (group.sortOrder == ObjGroup.SortOrderKind.DESC) {
                 // カメラからの距離でソート（後ろのものから描画する）
-                culled.sort( (a, b) => {
+                culled.sort((a, b) => {
                     return b.clip[2] - a.clip[2];
                 });
             }
-            else if( group.sortOrder == ObjGroup.SortOrderKind.ASC ) {
+            else if (group.sortOrder == ObjGroup.SortOrderKind.ASC) {
                 // カメラからの距離でソート（近いものから描画する）
-                culled.sort( (a, b) => {
+                culled.sort((a, b) => {
                     return a.clip[2] - b.clip[2];
                 });
             }
 
-
+            // 行列の更新
             culled.forEach((obj) => {
                 obj.updateMatrix(camera.projMtx, camera.mdlViewMtx, this.vpMtx);
+            });
+
+            // シャドウマップのレンダリング
+            dirLights.forEach((light) => {
+                if (light.enableShadow) {
+
+                    this.renderShadowMap(gl, culled, light);
+                }
+            });
+
+            // オブジェクトの描画
+            culled.forEach((obj) => {
                 Renderer.renderContext = {
                     // カメラ
                     viewMatrix: camera.mdlViewMtx,
@@ -165,19 +174,17 @@ export class Renderer {
                     // 環境光の色
                     ambientLightColor: scene.ambientColor || [0.2, 0.2, 0.2],
 
-                    // 影
-                    lightSpaceMatrix: dirLights.length > 0 ? dirLights[0].lightSpaceMatrix : mat4.create(),
-                    shadowMapTexture: dirLights.length > 0 ? dirLights[0].texture : null,
+                    // 影関係はlightから直接取得
                 }
-                if( obj.type == 'mesh' ){
-                    const shader = ShaderManager.shader( obj.material.shaderName );
+                if (obj.type == 'mesh') {
+                    const shader = ShaderManager.shader(obj.material.shaderName);
                     shader.render(this.gl, Renderer.renderContext, obj.geometry)
                 }
             });
         });
     }
 
-    renderShadowMap(scene, light) {
+    renderShadowMap(gl, objs, light) {
         //function renderShadowPass(gl, shadowFBO, scene, light) {
         // 1. フレームバッファをバインド
         gl.bindFramebuffer(gl.FRAMEBUFFER, light.frameBuffer);
@@ -194,16 +201,14 @@ export class Renderer {
         gl.cullFace(gl.FRONT); // 表面を消して背面だけを描く手法がよく使われます
 
         // シーン内の全オブジェクトを描画
-        scene.children.forEach((group) => {
-            group.children.forEach((obj) => {
-                Renderer.renderContext = {
-                    // ライトのビュー行列と射影行列を使って計算した行列
-                    lightSpaceMatrix: light.lightSpaceMatrix,
-                    modelMatrix: obj.worldMtx,
-                }
-                const shader = ShaderManager.shader( ShaderName.SHADOWMAP );
-                shader.render(this.gl, Renderer.renderContext, obj.geometry)
-            });
+        objs.forEach((obj) => {
+            Renderer.renderContext = {
+                // ライトのビュー行列と射影行列を使って計算した行列
+                lightSpaceMatrix: light.lightSpaceMatrix,
+                modelMatrix: obj.worldMtx,
+            }
+            const shader = ShaderManager.shader(ShaderName.SHADOWMAP);
+            shader.render(this.gl, Renderer.renderContext, obj.geometry)
         });
 
         // 6. 設定を元に戻す
@@ -219,7 +224,7 @@ export class Renderer {
     frustumCulling(objects) {
         const culled = []
         objects.forEach(obj => {
-            if(this.frustum.isSphereInside(obj.position, 2.0)) {
+            if (this.frustum.isSphereInside(obj.position, 2.0)) {
                 culled.push(obj);
             }
         });
