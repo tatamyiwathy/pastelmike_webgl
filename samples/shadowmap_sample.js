@@ -28,15 +28,16 @@ function main() {
             const radius = 3;
             const x = Math.sin(this.angle) * radius;
             const z = Math.cos(this.angle) * radius;
-            obj.position = [x, 1, z];
+            obj.position = [x, 2, z];
             obj.lookAt([0, 0, 0]);
         }
     }
 
     const camera = new PerspectiveCamera(Math.PI / 2, canvas.width / canvas.height, 0.1, 100, {});
     const cameraRotater = new CameraRotater();
+    camera.position = [3, 2, 3];
     camera.lookAt([0, 0, 0]);
-    camera.animator = cameraRotater;
+    // camera.animator = cameraRotater;
     scene.add(camera);
 
     const plain_geometory = create_plain_geometry(gl, 20);
@@ -46,9 +47,14 @@ function main() {
     scene.add(plainMesh);
 
     const dlight = new DirectionLight(gl, {
-        direction: [1, 1, 0],
+        direction: [0, -1, 0],
+        up: [0, 0, 1],
+        position: [0, 50, 0],
         color: [1, 1, 1],
         enableShadow: true,
+        shadowBoxSize: 50,
+        near: 1.0,
+        far: 200,
     });
     scene.add(dlight);
 

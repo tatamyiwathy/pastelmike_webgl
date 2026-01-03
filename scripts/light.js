@@ -11,6 +11,7 @@ class DirectionLight extends Object3d {
         this.color = args.color || [1, 1, 1]; // 白色光源
         this.lightKind = "directional";
         this.enableShadow = args.enableShadow || false;
+        this.up = args.up || [0, 1, 0];
 
         // シャドウマップ用のパラメータ
         if (this.enableShadow) {
@@ -48,12 +49,11 @@ class DirectionLight extends Object3d {
         if (!this.enableShadow) {
             return;
         }
-        const target = vec3.add(vec3.create(), this.position, this.direction);
+        //const target = vec3.add(vec3.create(), this.position, this.direction);
+        const target = [0,0,0];
         const lightViewMatrix = mat4.lookAt(mat4.create(), this.position, target, this.up);
-
         const size = this.shadowBoxSize; // ライトがカバーする範囲（半径）
         const lightProjectionMatrix = mat4.ortho(mat4.create(), -size, size, -size, size, this.near, this.far);
-
         // lightSpaceMatrix = P * V
         mat4.multiply(this.lightSpaceMatrix, lightProjectionMatrix, lightViewMatrix);
     }

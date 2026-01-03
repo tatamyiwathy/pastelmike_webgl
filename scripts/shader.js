@@ -165,7 +165,15 @@ const fragmentShaderSource = `
         // 2. 座標を 0.0 ～ 1.0 の範囲に変換（テクスチャUV用）
         // クリップ空間は -1～1 なので、0.5倍して0.5足す
         projCoords = projCoords * 0.5 + 0.5;
-        
+
+        // --- ここを追加！ ---
+        // ライトの視界（0.0～1.0）の外側にあるピクセルは、影を計算せず 1.0 (光) を返す
+        if (projCoords.z > 1.0 || projCoords.x < 0.0 || projCoords.x > 1.0 || projCoords.y < 0.0 || projCoords.y > 1.0) {
+            return 1.0;
+        }
+        // ------------------        
+
+
         // 3. シャドウマップから一番手前の深度を取得
         float closestDepth = texture(shadowMap, projCoords.xy).r;
         
@@ -174,7 +182,7 @@ const fragmentShaderSource = `
         
         // 5. 比較して影かどうかを判定
         // 現在の深さが、マップの深さより大きければ影
-        float shadow = currentDepth > closestDepth ? 0.5 : 1.0;
+        float shadow = currentDepth > closestDepth ? 0.0 : 1.0;
         
         return shadow;
     }
@@ -194,7 +202,7 @@ const fragmentShaderSource = `
 
             if (!dirLights[i].enabled) continue;
 
-            vec3 Ld = normalize(dirLights[i].direction);
+            vec3 Ld = -normalize(dirLights[i].direction);
             
             //拡散反射
             float diffD = max(dot(N, Ld), 0.0);
@@ -732,7 +740,6 @@ class ShadowMapShader extends ShaderProgram {
         // ライト行列をセット
         const mtx = renderContext.lightSpaceMatrix;
         gl.uniformMatrix4fv(this.lightSpaceMatrixLocation, false, mtx);
-
         // モデル行列をセット
         gl.uniformMatrix4fv(this.modelMatrixLocation, false, renderContext.modelMatrix);
     }

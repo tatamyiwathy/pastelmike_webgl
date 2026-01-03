@@ -126,6 +126,7 @@ export class Renderer {
             // シャドウマップのレンダリング
             dirLights.forEach((light) => {
                 if (light.enableShadow) {
+                    light.updateMatrix(camera.projMtx, camera.mdlViewMtx, this.vpMtx);
 
                     this.renderShadowMap(gl, culled, light);
                 }
@@ -197,8 +198,8 @@ export class Renderer {
         gl.clear(gl.DEPTH_BUFFER_BIT);
 
         // 4. 背面カリングの設定（後述する「シャドウアクネ」対策）
-        gl.enable(gl.CULL_FACE);
-        gl.cullFace(gl.FRONT); // 表面を消して背面だけを描く手法がよく使われます
+        // gl.enable(gl.CULL_FACE);
+        // gl.cullFace(gl.FRONT); // 表面を消して背面だけを描く手法がよく使われます
 
         // シーン内の全オブジェクトを描画
         objs.forEach((obj) => {
@@ -214,6 +215,8 @@ export class Renderer {
         // 6. 設定を元に戻す
         gl.cullFace(gl.BACK); // 通常の描画に戻す
         gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+        // ビューポートもメイン描画用に復元（追加）
+        gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
     }
 
 
