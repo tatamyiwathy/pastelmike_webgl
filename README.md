@@ -36,6 +36,7 @@ A repository for learning WebGL
 - ✅ **ライティング**
   - Directional Light（平行光源）
   - Point Light（点光源・減衰対応）
+  - Shadow Mapping（シャドウマップ）
 
 - ✅ **エフェクト**
   - Fog（フォグ効果）
@@ -76,7 +77,6 @@ A repository for learning WebGL
 - ❌ AmbientLight（環境光）
 - ❌ HemisphereLight（半球ライト）
 - ❌ 複数ライトの同時サポート
-- ❌ Shadow Mapping（影の生成）
 - ❌ ライトの減衰計算
 
 ### 🎨 マテリアル/シェーダー
@@ -165,7 +165,6 @@ A repository for learning WebGL
 2. **PointLight/SpotLight** - より豊かなライティング表現
 3. **Raycasting** - インタラクティブな操作に必須
 4. **GLTFローダー** - 現代的な3Dモデル対応
-5. **Shadow Mapping** - リアルな影表現
-6. **カメラコントロール** - ユーザビリティ向上
-7. **PBRマテリアル** - フォトリアルなレンダリング
-8. **アルファブレンディング** - 透明オブジェクトの適切な描画
+5. **カメラコントロール** - ユーザビリティ向上
+6. **PBRマテリアル** - フォトリアルなレンダリング
+7. **アルファブレンディング** - 透明オブジェクトの適切な描画
