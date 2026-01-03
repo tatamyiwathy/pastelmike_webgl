@@ -147,7 +147,7 @@ function create_sphere_geometry(gl, radius = 1, sectors = 32, rings = 16) {
     const indices = [];
 
     for (let i = 0; i <= rings; i++) { // 緯度方向
-        const v = i / rings;  // 0.0 to 1.0
+        const v = 1.0 - i / rings;  // 1.0 to 0.0 (テクスチャ上端を北極に)
         const phi = Math.PI * i / rings - Math.PI / 2.0;
         for (let j = 0; j <= sectors; j++) { // 経度方向
             const u = j / sectors;  // 0.0 to 1.0
