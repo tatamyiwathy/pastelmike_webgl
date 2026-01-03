@@ -1,12 +1,15 @@
 import { variable_validation } from "./utils.js";
 import { Material } from "./material.js";
 
+const SHADOWMAP_SLOT = 1; // シャドウマップ用のテクスチャユニット
+
 const ShaderName = {
     BASIC: 'basic',
     PARTICLE: 'particle',
     SKYBOX: 'skybox',
     SIMPLE: 'simple',
     SIMPLETEX: 'simpletex',
+    SHADOWMAP: 'shadowmap',
 };
 
 // シンプルシェーダー
@@ -75,7 +78,10 @@ const vertexShaderSource = `
     uniform mat4 modelMatrix;
     uniform mat4 normalMatrix;
     uniform mat4 viewMatrix;
-    // uniform vec3 directionalLightDir;  // 光の方向
+
+    // 影
+    uniform mat4 lightSpaceMatrix; // Rendererから渡すライト行列
+    out vec4 v_positionInLightSpace; // フラグメントシェーダーへ送る
 
     in vec3 position;
     in vec3 normal;
@@ -83,12 +89,12 @@ const vertexShaderSource = `
 
     out vec3 v_worldPosition;
     out vec3 v_normal;
-    // out vec3 v_directionalLightDir;    
     out float v_depth; // fog
     out vec2 v_texcoord; // UV座標 (vt)
 
     void main() {
-        // 位置をワールド座標に変換 (modelMatrixを掛ける)
+
+    // 位置をワールド座標に変換 (modelMatrixを掛ける)
         vec4 worldPosition = modelMatrix * vec4(position, 1.0);
         v_worldPosition = worldPosition.xyz;
 
@@ -97,6 +103,8 @@ const vertexShaderSource = `
         // v_directionalLightDir = directionalLightDir;
         v_texcoord = texcoord; // そのままフラグメントシェーダーへ
 
+        // ライト視点での座標を計算
+        v_positionInLightSpace = lightSpaceMatrix * worldPosition;
 #ifdef USE_FOG
         vec4 viewPosition = viewMatrix * worldPosition;
         v_depth = length(viewPosition.xyz);
@@ -128,6 +136,7 @@ const fragmentShaderSource = `
     uniform bool usePointLight;
     uniform vec3 ambientLightColor;
 
+    // 平行光源
     struct DirectionalLight {
         vec3 direction;
         vec3 color;
@@ -136,6 +145,10 @@ const fragmentShaderSource = `
     uniform DirectionalLight dirLights[MAX_DIR_LIGHTS];
     uniform int dirLightCount;
 
+    // 影
+    uniform sampler2D shadowMap; // パス1で作ったテクスチャ
+    in vec4 v_positionInLightSpace;
+
     in vec3 v_worldPosition;
     in vec3 v_normal;
     // in vec3 v_directionalLightDir;
@@ -143,6 +156,28 @@ const fragmentShaderSource = `
     in vec2 v_texcoord;   // 頂点シェーダーから届いたUV
     
     out vec4 outColor;
+    
+    float calculateShadow() {
+        // 1. 透視除算 (wで割る) 
+        // 平行光源(ortho)の場合はw=1ですが、汎用性のために行います
+        vec3 projCoords = v_positionInLightSpace.xyz / v_positionInLightSpace.w;
+        
+        // 2. 座標を 0.0 ～ 1.0 の範囲に変換（テクスチャUV用）
+        // クリップ空間は -1～1 なので、0.5倍して0.5足す
+        projCoords = projCoords * 0.5 + 0.5;
+        
+        // 3. シャドウマップから一番手前の深度を取得
+        float closestDepth = texture(u_shadowMap, projCoords.xy).r;
+        
+        // 4. 現在のピクセルの深度
+        float currentDepth = projCoords.z;
+        
+        // 5. 比較して影かどうかを判定
+        // 現在の深さが、マップの深さより大きければ影
+        float shadow = currentDepth > closestDepth ? 0.5 : 1.0;
+        
+        return shadow;
+    }
     
     void main() {
         // ベクトルの正規化
@@ -157,7 +192,7 @@ const fragmentShaderSource = `
             if (i >= dirLightCount) break;
 
             if (!dirLights[i].enabled) continue;
-            
+
             vec3 Ld = normalize(dirLights[i].direction);
             
             //拡散反射
@@ -192,7 +227,8 @@ const fragmentShaderSource = `
         }
         vec4 combinedColor = vec4(baseColor.rgb + (ambientLightColor * color.rgb), baseColor.a);
 
-        outColor = combinedColor;
+        float shadow = calculateShadow();
+        outColor = vec4(combinedColor.rgb * shadow, combinedColor.a);
 
         // --- 3. フォグ (Fog) ---
 #ifdef USE_FOG
@@ -287,6 +323,32 @@ void main() {
     fragColor = vec4(finalColor, 1.0);
 }
 `;
+
+
+const shadowmap_vertexShaderSource = `
+layout(location = 0) in vec3 a_position;
+
+uniform mat4 lightSpaceMatrix;
+uniform mat4 modelMatrix;
+
+void main() {
+    // ライトから見た座標に変換
+    gl_Position = lightSpaceMatrix * modelMatrix * vec4(a_position, 1.0);
+}
+    `;
+
+const shadowmap_fragmentShaderSource = `
+#version 300 es
+precision highp float;
+
+void main() {
+    // WebGL 2.0 + 深度アタッチメントのみの場合、
+    // 何も書かなくても自動的に深度が書き込まれます。
+    // (空でOKです)
+}
+`;
+
+
 
 class ShaderProgram {
     constructor(gl, name, vertexSource, fragmentSource) {
@@ -453,6 +515,11 @@ class BasicShader extends ShaderProgram {
         this.quadraticLocation = gl.getUniformLocation(this.program, 'quadratic'); // 減衰係数（二次項）
         this.usePointLightLocation = gl.getUniformLocation(this.program, 'usePointLight');
         this.ambientLightColorLocation = gl.getUniformLocation(this.program, 'ambientLightColor'); // 環境光の色
+        // 影
+        this.lightSpaceMatrixLocation = gl.getUniformLocation(this.program, 'lightSpaceMatrix');
+        this.shadowMapLocation = gl.getUniformLocation(this.program, 'shadowMap');
+
+
     }
 
     render(gl, renderContext, geometry) {
@@ -519,6 +586,12 @@ class BasicShader extends ShaderProgram {
 
         // 環境光の設定
         gl.uniform3f(this.ambientLightColorLocation, ...renderContext.ambientLightColor); // 環境光の色
+
+        // 影
+        gl.uniformMatrix4fv(this.lightSpaceMatrixLocation, false, renderContext.lightSpaceMatrix);
+        gl.activeTexture(gl.TEXTURE0 + SHADOWMAP_SLOT); 
+        gl.bindTexture(gl.TEXTURE_2D, renderContext.shadowMapTexture);
+        gl.uniform1i(this.shadowMapLocation, SHADOWMAP_SLOT); // シャドウマップはテクスチャユニット1にバインド
 
         if (renderContext.wireFrame) {
             gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, geometry.wire_ibo.buffer);
@@ -634,6 +707,29 @@ class ParticleShader extends ShaderProgram {
 
 }
 
+class ShadowMapShader extends ShaderProgram {
+    constructor(gl, shaderContext) {
+        const shaderConfigs = shaderContext.config || '';
+        super(gl, 'shadowmap', shaderConfigs + shadowmap_vertexShaderSource, shaderConfigs + shadowmap_fragmentShaderSource);
+        this.positionLocation = gl.getAttribLocation(this.program, 'a_position');
+        this.lightSpaceMatrixLocation = gl.getUniformLocation(this.program, 'lightSpaceMatrix');
+        this.modelMatrixLocation = gl.getUniformLocation(this.program, 'modelMatrix');
+    }
+    render(gl, renderContext, geometry) {
+        this.useProgram(gl);
+
+        gl.bindBuffer(gl.ARRAY_BUFFER, geometry.v_vbo.buffer);
+        gl.enableVertexAttribArray(this.positionLocation);
+        gl.vertexAttribPointer(this.positionLocation, 3, gl.FLOAT, false, 0, 0);
+
+        // ライト行列をセット
+        const mtx = renderContext.lightSpaceMatrix;
+        gl.uniformMatrix4fv(this.lightSpaceMatrixLocation, false, mtx);
+
+        // モデル行列をセット
+        gl.uniformMatrix4fv(this.modelMatrixLocation, false, renderContext.modelMatrix);
+    }
+}
 class ShaderManager {
     static _shaders;
     constructor(gl, shaderContext) {
@@ -643,6 +739,7 @@ class ShaderManager {
         ShaderManager._shaders[ShaderName.SKYBOX] = new SkyBoxShader(gl, shaderContext);
         ShaderManager._shaders[ShaderName.SIMPLE] = new SimpleShader(gl, shaderContext);
         ShaderManager._shaders[ShaderName.SIMPLETEX] = new SimpleTextureShader(gl, shaderContext);
+        ShaderManager._shaders[ShaderName.SHADOWMAP] = new ShadowMapShader(gl, shaderContext);
     }
 
     static shader(name) {

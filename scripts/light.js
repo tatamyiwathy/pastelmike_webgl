@@ -1,6 +1,7 @@
 import { mat3 } from 'gl-matrix';
 import { mat4, vec3, vec4, quat, glMatrix } from gl - matrix';
 import { Object3d } from './object_3d.js';
+import { createShadowFramebuffer } from './offscreen.js';
 
 
 class DirectionLight extends Object3d {
@@ -11,8 +12,18 @@ class DirectionLight extends Object3d {
         this.color = args.color || [1, 1, 1]; // 白色光源
         this.lightKind = "directional";
         this.enableShadow = args.enableShadow || false;
-        this.shadowBoxSize = args.shadowBoxSize || 10; // シャドウマップに含める範囲の半分の長さ
-        this.lightSpaceMatrix = mat4.create();
+
+        // シャドウマップ用のパラメータ
+        if (this.enableShadow) {
+            this.near = args.near || 1.0;
+            this.far = args.far || 50.0;
+            this.enableShadow = args.enableShadow || false;
+            this.shadowBoxSize = args.shadowBoxSize || 10; // シャドウマップに含める範囲の半分の長さ
+            this.lightSpaceMatrix = mat4.create();
+
+            this.frameBuffer, this.texture = createShadowFramebuffer(gl, 1024, 1024);
+            this.frameBufferSize = 1024;
+        }
     }
 
 

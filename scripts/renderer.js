@@ -1,5 +1,5 @@
 import { mat4 } from 'gl-matrix';
-import { ShaderManager } from './shader.js';
+import { ShaderManager, ShaderName } from './shader.js';
 import { ObjGroup } from './scene.js';
 import { Frustum } from './frustum.js';
 import { Clock } from './clock.js';
@@ -103,6 +103,10 @@ export class Renderer {
             // カリング
             const culled = this.enableCulling ? this.frustumCulling(group.children) : group.children;
 
+            dirLights.forEach( (light) => {
+                renderShadowMap(scene, light, light.texture);
+            }
+
 
             if( group.sortOrder == ObjGroup.SortOrderKind.DESC ) {
                 // カメラからの距離でソート（後ろのものから描画する）
@@ -160,6 +164,10 @@ export class Renderer {
 
                     // 環境光の色
                     ambientLightColor: scene.ambientColor || [0.2, 0.2, 0.2],
+
+                    // 影
+                    lightSpaceMatrix: dirLights.length > 0 ? dirLights[0].lightSpaceMatrix : mat4.create(),
+                    shadowMapTexture: dirLights.length > 0 ? dirLights[0].texture : null,
                 }
                 if( obj.type == 'mesh' ){
                     const shader = ShaderManager.shader( obj.material.shaderName );
@@ -168,6 +176,41 @@ export class Renderer {
             });
         });
     }
+
+    renderShadowMap(scene, light) {
+        //function renderShadowPass(gl, shadowFBO, scene, light) {
+        // 1. フレームバッファをバインド
+        gl.bindFramebuffer(gl.FRAMEBUFFER, light.frameBuffer);
+
+        // 2. ビューポートをシャドウマップの解像度に設定（超重要！）
+        // shadowMapSize は FBO 作成時に指定した 1024 などの値
+        gl.viewport(0, 0, light.frameBufferSize, light.frameBufferSize);
+        // 3. 深度バッファをクリア（1.0で塗りつぶす）
+        gl.clearDepth(1.0);
+        gl.clear(gl.DEPTH_BUFFER_BIT);
+
+        // 4. 背面カリングの設定（後述する「シャドウアクネ」対策）
+        gl.enable(gl.CULL_FACE);
+        gl.cullFace(gl.FRONT); // 表面を消して背面だけを描く手法がよく使われます
+
+        // シーン内の全オブジェクトを描画
+        scene.children.forEach((group) => {
+            group.children.forEach((obj) => {
+                Renderer.renderContext = {
+                    // ライトのビュー行列と射影行列を使って計算した行列
+                    lightSpaceMatrix: light.lightSpaceMatrix,
+                    modelMatrix: obj.worldMtx,
+                }
+                const shader = ShaderManager.shader( ShaderName.SHADOWMAP );
+                shader.render(this.gl, Renderer.renderContext, obj.geometry)
+            });
+        });
+
+        // 6. 設定を元に戻す
+        gl.cullFace(gl.BACK); // 通常の描画に戻す
+        gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+    }
+
 
     static defaultFogColor = [0.5, 0.5, 0.5, 1.0];
     static defaultColor = [1.0, 1.0, 1.0, 1.0];
