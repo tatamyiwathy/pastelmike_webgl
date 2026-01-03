@@ -570,10 +570,20 @@ class BasicShader extends ShaderProgram {
 
     render(gl, renderContext, geometry) {
         this.useProgram(gl);
-
-        gl.enable(gl.BLEND);
-        gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
-        //gl.depthMask(true);
+        // 必要な場合のみブレンドを有効化（透過マテリアル用）
+        if (renderContext.blendMode !== Material.BlendMode.NONE) {
+            gl.enable(gl.BLEND);
+            if (renderContext.blendMode === Material.BlendMode.ALPHA) {
+                gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+            } else if (renderContext.blendMode === Material.BlendMode.ADD) {
+                gl.blendFunc(gl.SRC_ALPHA, gl.ONE);
+            } else if (renderContext.blendMode === Material.BlendMode.MULTIPLY) {
+                gl.blendFunc(gl.DST_COLOR, gl.ONE_MINUS_SRC_ALPHA);
+            }
+        } else {
+            gl.disable(gl.BLEND);
+        }
+        gl.depthMask(true);
 
         gl.bindBuffer(gl.ARRAY_BUFFER, geometry.v_vbo.buffer);
         gl.enableVertexAttribArray(this.positionLocation);

@@ -17,7 +17,7 @@ function main() {
     const scene = new Scene();
 
     // デバッグモード: シャドウマップを画面右下に表示
-    renderer.debugShadowMap = true;
+    // renderer.debugShadowMap = true;
 
 
     class CameraRotater extends Animator {
@@ -40,7 +40,7 @@ function main() {
     const cameraRotater = new CameraRotater();
     camera.position = [3, 2, 3];
     camera.lookAt([0, 0, 0]);
-    // camera.animator = cameraRotater;
+    camera.animator = cameraRotater;
     scene.add(camera);
 
     const plain_geometory = create_plain_geometry(gl, 20);
@@ -50,7 +50,7 @@ function main() {
     scene.add(plainMesh);
 
     const dlight = new DirectionLight(gl, {
-        direction: [0, -1, 0],
+        direction: [0, -1, -1],
         up: [0, 0, 1],
         position: [0, 50, 0],
         color: [1, 1, 1],
@@ -64,7 +64,7 @@ function main() {
     const cube_geometry = create_cube_geometry(gl, 1, 1, 1);
     const cube_material = new MeshSpecularMaterial(gl);
     const cubeMesh = new Mesh(gl, cube_geometry, cube_material);
-    cubeMesh.position = [0, 0.5, 0];
+    cubeMesh.position = [0, 2, 0];
     scene.add(cubeMesh);
 
     function render() {
