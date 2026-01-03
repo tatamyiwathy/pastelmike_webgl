@@ -12,7 +12,7 @@ function createShadowFramebuffer(gl, size) {
     gl.bindTexture(gl.TEXTURE_2D, depthTexture);
     
     // 比較モード無効化（デバッグ時は通常のテクスチャとして読む）
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_COMPARE_MODE, gl.NONE);
+    // gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_COMPARE_MODE, gl.NONE);
     
     // WebGL 2.0なので DEPTH_COMPONENT24 が使用可能
     gl.texImage2D(
