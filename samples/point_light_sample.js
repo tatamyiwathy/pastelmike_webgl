@@ -10,6 +10,7 @@ import { MeshSpecularMaterial, MeshSimpleMaterial } from '../scripts/material.js
 import { Mesh } from '../scripts/mesh.js';
 import { TextureLoader } from '../scripts/texture_loader.js';
 import { Animator } from '../scripts/object_3d.js';
+import { Sprite } from '../scripts/sprite.js';
 
 function main() {
     const canvas = document.getElementById('canvas');
@@ -50,9 +51,10 @@ function main() {
 
     const scene = new Scene();
 
+    const textureLoader = new TextureLoader();
+
 
     const sphere_geometry = new create_sphere_geometry(gl);
-    const textureLoader = new TextureLoader();
     const texture = textureLoader.load(gl, './assets/lroc_color_2k.jpg');
     const materialContext = { textures: texture };
     const sphere_material = new MeshSpecularMaterial(gl, materialContext);
@@ -81,8 +83,26 @@ function main() {
     sphere_mesh2.material.color = [1, 1, 1, 1];
     scene.add(sphere_mesh2);
 
+    class PointLightAmimator extends Animator {
+        constructor() {
+          super();
+          this.angle = 0;
+        }
+        update(obj, deltaTime) {
+            this.angle += deltaTime * 0.1;
+            obj.position = [3 * Math.cos(this.angle), 1.5, 3 * Math.sin(this.angle)];
+        }
+    }
+
     const light = new PointLight(gl);
     scene.add(light);
+    light.animator = new PointLightAmimator();
+
+    const spriteTexture = textureLoader.load(gl, './assets/flare.png');
+    const sprite = new Sprite(gl, spriteTexture);
+    sprite.animator = new PointLightAmimator();
+    scene.add(sprite, {layer: 2});
+
 
     const camera = new PerspectiveCamera(Math.PI / 2, canvas.width / canvas.height, 0.1, 100, {});
     camera.position = [0, 0, 3];
