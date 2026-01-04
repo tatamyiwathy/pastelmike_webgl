@@ -11,6 +11,7 @@ import { Animator } from '../scripts/object_3d.js';
 
 
 function main() {
+    let isExit = false;
     const canvas = document.getElementById('canvas');
     const renderer = new Renderer(canvas);
     renderer.clearColor = [0.2, 0.2, 0.4, 1.0];
@@ -19,7 +20,12 @@ function main() {
 
     // デバッグモード: シャドウマップを画面右下に表示
     // renderer.debugShadowMap = true;
-
+    document.addEventListener('keydown',
+        event => {
+            if (event.key === 'Escape') {
+                isExit = true;
+            }
+        });
 
     class CameraRotater extends Animator {
         constructor() {
@@ -47,6 +53,7 @@ function main() {
     const plain_geometory = create_plain_geometry(gl, 20);
     const plain_material = new MeshSpecularMaterial(gl);
     const plainMesh = new Mesh(gl, plain_geometory, plain_material);
+    plainMesh.tagName = 'ground';
     plainMesh.position = [0, 0, 0];
     scene.add(plainMesh);
 
@@ -84,10 +91,14 @@ function main() {
     const cube_material = new MeshSpecularMaterial(gl);
     const cubeMesh = new Mesh(gl, cube_geometry, cube_material);
     cubeMesh.position = [0, 2, 0];
+    cubeMesh.tagName = 'cube';
     scene.add(cubeMesh);
 
     function render() {
         renderer.render(scene, camera);
+        if (isExit) {
+            return;
+        }
         requestAnimationFrame(render);
     }
 
