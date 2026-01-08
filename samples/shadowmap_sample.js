@@ -70,13 +70,11 @@ function main() {
             const x = Math.sin(this.angle) * radius;
             const z = Math.cos(this.angle) * radius;
             obj.position = [x, 50, z];
-            obj.direction = [-x, -50, -z];
+            obj.targetPosition = [0, 0, 0];
         }
     }
 
     const dlight = new DirectionLight(gl, {
-        direction: [0, -1, -1],
-        up: [0, 0, 1],
         position: [0, 50, 0],
         color: [1, 1, 1],
         enableShadow: true,
@@ -86,6 +84,17 @@ function main() {
     });
     dlight.animator = new LightRotater();
     scene.add(dlight);
+
+    const dlight2 = new DirectionLight(gl, {
+        position: [50, 50, 0],
+        color: [1, 1, 1],
+        enableShadow: true,
+        shadowBoxSize: 50,
+        near: 1.0,
+        far: 200,
+    });
+    scene.add(dlight2);
+
 
     const cube_geometry = create_cube_geometry(gl, 1, 1, 1);
     const cube_material = new MeshSpecularMaterial(gl);
