@@ -678,7 +678,6 @@ class BasicShader extends ShaderProgram {
 
         // 影
         for (let i = 0; i < renderContext.dirLightNum; i++) {
-            console.log('dirLight ' + i + ' enableShadow: ' + renderContext.dirLights[i].enableShadow);
             if (renderContext.dirLights[i].enableShadow) {
                 gl.uniform1i(this.enableShadowLocations[i], 1);
                 gl.uniformMatrix4fv(this.lightSpaceMatrixLocations[i], false, renderContext.dirLights[i].lightSpaceMatrix);

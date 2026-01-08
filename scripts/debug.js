@@ -1,11 +1,12 @@
-class DebugLogger {
-    cnt = 0;
-    log(message,count=1) {
-        if(this.cnt>=count) return;
+class Debug {
+    static enableLog = false;
+    static log(message,count=1) {
+        if (!Debug.enableLog) {
+            return;
+        }
         console.log(`[Debug ${this.cnt}] ${message}`);
-        this.cnt++;
     }
 }
 
 
-export { DebugLogger };
+export { Debug };

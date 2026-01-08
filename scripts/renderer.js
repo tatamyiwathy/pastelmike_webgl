@@ -4,7 +4,7 @@ import { ObjGroup } from './scene.js';
 import { Frustum } from './frustum.js';
 import { Clock } from './clock.js';
 import { Material } from './material.js';
-import { DebugLogger } from './debug.js';
+import { Debug } from './debug.js';
 
 
 function checkGlError(gl, msg) {
@@ -72,7 +72,7 @@ export class Renderer {
 
         if (this.readyShader == false) {
             this.shaderContext.isFog = scene.isFog ? true : false;
-            console.log("Shader isFog:", this.shaderContext.isFog);
+            Debug.log("Shader isFog:", this.shaderContext.isFog);
 
             scene.children.forEach((group) => {
                 group.children.forEach((obj) => {
@@ -238,21 +238,21 @@ export class Renderer {
     }
 
     renderDebugShadowMap(gl, light) {
-        console.log('=== Debug Shadow Map Rendering Start ===');
+        Debug.log('=== Debug Shadow Map Rendering Start ===');
         
         if (!this.debugQuadBuffers) {
             this.debugQuadBuffers = this.createDebugQuadBuffers(gl);
-            console.log('Debug quad buffers created');
+            Debug.log('Debug quad buffers created');
         }
 
-        console.log('Light texture:', light.texture);
-        console.log('Framebuffer:', light.frameBuffer);
+        Debug.log('Light texture:', light.texture);
+        Debug.log('Framebuffer:', light.frameBuffer);
 
         // 深度テストを無効化（オーバーレイとして描画）
         gl.disable(gl.DEPTH_TEST);
 
         const shader = ShaderManager.shader(ShaderName.DEBUG_DEPTH);
-        console.log('Debug shader:', shader);
+        Debug.log('Debug shader:', shader);
         
         try {
             shader.render(
@@ -261,7 +261,7 @@ export class Renderer {
                 this.debugQuadBuffers.texcoordBuffer,
                 light.texture
             );
-            console.log('Debug render completed');
+            Debug.log('Debug render completed');
         } catch (e) {
             console.error('Debug render failed:', e);
         }
@@ -269,13 +269,13 @@ export class Renderer {
         // 深度テストを再度有効化
         gl.enable(gl.DEPTH_TEST);
         
-        console.log('=== Debug Shadow Map Rendering End ===');
+        Debug.log('=== Debug Shadow Map Rendering End ===');
     }
 
     renderShadowMap(gl, objs, light) {
-        console.log('=== Shadow Map Rendering Start ===');
-        console.log('Light:', light);
-        console.log('Objects to render:', objs.length);
+        Debug.log('=== Shadow Map Rendering Start ===');
+        Debug.log('Light:', light);
+        Debug.log('Objects to render:', objs.length);
         
         //function renderShadowPass(gl, shadowFBO, scene, light) {
         // 1. フレームバッファをバインド
@@ -322,7 +322,7 @@ export class Renderer {
             }
         });
         
-        console.log('Actually rendered:', rendered, 'objects');
+        Debug.log('Actually rendered:', rendered, 'objects');
 
         // 6. 設定を元に戻す
         gl.disable(gl.POLYGON_OFFSET_FILL);
@@ -331,7 +331,7 @@ export class Renderer {
         // ビューポートもメイン描画用に復元（追加）
         gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
         
-        console.log('=== Shadow Map Rendering End ===');
+        Debug.log('=== Shadow Map Rendering End ===');
     }
 
 
