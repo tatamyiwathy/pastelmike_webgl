@@ -6,6 +6,7 @@ import { MeshSpecularMaterial } from '../scripts/material.js';
 import { Mesh } from '../scripts/mesh.js';
 import { DirectionLight } from '../scripts/light.js';
 import { Animator } from '../scripts/object_3d.js';
+import { Debug } from '../scripts/debug.js';
 
 
 
@@ -75,7 +76,7 @@ function main() {
     }
 
     const dlight = new DirectionLight(gl, {
-        position: [0, 50, 0],
+        position: [0, 50, 50],
         color: [1, 1, 1],
         enableShadow: true,
         shadowBoxSize: 50,
@@ -119,3 +120,4 @@ function main() {
 main();
 
 
+Debug.enableLog = true;

@@ -7,12 +7,6 @@ import { Material } from './material.js';
 import { Debug } from './debug.js';
 
 
-function checkGlError(gl, msg) {
-    const error = gl.getError();
-    if (error !== gl.NO_ERROR) {
-        throw new Error(msg + ' - WebGL Error: ' + error);
-    }
-}
 export class Renderer {
     constructor(canvas) {
         this.gl = canvas.getContext('webgl2', { depth: true });
@@ -201,10 +195,11 @@ export class Renderer {
                     // 影関係はlightから直接取得
                 }
                 if (obj.type == 'mesh') {
-                    checkGlError(gl, 'Before render');
+                    Debug.checkGlError(gl, 'Before render');
+                    console.log('dirLights count:', Renderer.renderContext.dirLightNum);
                     const shader = ShaderManager.shader(obj.material.shaderName);
                     shader.render(this.gl, Renderer.renderContext, obj.geometry)
-                    checkGlError(gl, 'after render: obj:'+obj.tagName);
+                    Debug.checkGlError(gl, 'after render: obj:'+obj.tagName);
                 }
             });
         });
@@ -301,7 +296,7 @@ export class Renderer {
         objs.forEach((obj) => {
             if (obj.type !== 'mesh') return;
             
-            checkGlError(gl, 'Before shadow map render');
+            Debug.checkGlError(gl, 'Before shadow map render');
             Renderer.renderContext = {
                 // ライトのビュー行列と射影行列を使って計算した行列
                 lightSpaceMatrix: light.lightSpaceMatrix,
@@ -317,7 +312,7 @@ export class Renderer {
                 rendered++;
                 
                 // WebGLエラーチェック
-                checkGlError(gl, 'After shadow map render');
+                Debug.checkGlError(gl, 'After shadow map render');
             
             }
         });

@@ -1,5 +1,6 @@
 import { variable_validation } from "./utils.js";
 import { Material } from "./material.js";
+import { Debug } from "./debug.js";
 
 const SHADOWMAP_SLOT = 1; // シャドウマップ用のテクスチャユニット
 
@@ -146,7 +147,7 @@ const fragmentShaderSource = `
     struct DirectionalLight {
         vec3 direction;
         vec3 color;
-        bool enabled;
+        int enabled;
     };
     uniform DirectionalLight dirLights[MAX_DIR_LIGHTS];
     uniform int dirLightCount;
@@ -171,7 +172,7 @@ const fragmentShaderSource = `
         float occlusion = 0.0;
         for (int x = -1; x <= 1; ++x) {
             for (int y = -1; y <= 1; ++y) {
-                float closestDepth;
+                float closestDepth = 0.0;
                 if (lightIndex == 0) {
                     closestDepth = texture(shadowMap[0], projCoords.xy + vec2(x, y) / vec2(textureSize(shadowMap[0], 0))).r;
                 } else if (lightIndex == 1) {
@@ -195,7 +196,13 @@ const fragmentShaderSource = `
     float calculateShadow(int lightIndex) {
         // 1. 透視除算 (wで割る) 
         // 平行光源(ortho)の場合はw=1ですが、汎用性のために行います
-        vec3 projCoords = v_positionInLightSpace[lightIndex].xyz / v_positionInLightSpace[lightIndex].w;
+        // vec3 projCoords = v_positionInLightSpace[lightIndex].xyz / v_positionInLightSpace[lightIndex].w;
+        vec4 posLS;
+        if (lightIndex == 0) posLS = v_positionInLightSpace[0];
+        else if (lightIndex == 1) posLS = v_positionInLightSpace[1];
+        else if (lightIndex == 2) posLS = v_positionInLightSpace[2];
+        else posLS = v_positionInLightSpace[3];    
+        vec3 projCoords = posLS.xyz / posLS.w;    
         
         // 2. 座標を 0.0 ～ 1.0 の範囲に変換（テクスチャUV用）
         // クリップ空間は -1～1 なので、0.5倍して0.5足す
@@ -221,8 +228,9 @@ const fragmentShaderSource = `
         vec3 totalSpecular = vec3(0.0);
 
 
-        for (int i = 0; i < dirLightCount; ++i) {
-            if (!dirLights[i].enabled) continue;
+        for (int i = 0; i < MAX_DIR_LIGHTS; i++) {
+            if (i >= dirLightCount) break;
+            if (dirLights[i].enabled == 0) continue;
 
             // 平行光源の方向ベクトル（ライトから頂点への方向）
             vec3 Ld = -normalize(dirLights[i].direction);
@@ -233,7 +241,7 @@ const fragmentShaderSource = `
 
             // 影の計算
             if( enableShadow[i] ) {
-                float shadow = calculateShadow(0);
+                float shadow = calculateShadow(i);
                 lightContribution *= shadow; // 影の影響を乗算
             }
 
@@ -427,9 +435,9 @@ class ShaderProgram {
         }
     }
     useProgram(gl) {
-        if(!gl.getProgramParameter(this.program, gl.LINK_STATUS)){
-		    alert(gl.getProgramInfoLog(this.program));
-    	}
+        if (!gl.getProgramParameter(this.program, gl.LINK_STATUS)) {
+            alert(gl.getProgramInfoLog(this.program));
+        }
         gl.useProgram(this.program);
     }
     createShader(gl, type, source) {
@@ -660,10 +668,8 @@ class BasicShader extends ShaderProgram {
             gl.uniform3f(this.dirLightColorLocations[i], ...renderContext.dirLights[i].color);
             gl.uniform1i(this.dirLightEnableLocations[i], renderContext.dirLights[i].enabled ? 1 : 0);
         }
-        console.log('dirLightNum: ' + renderContext.dirLightNum);
         gl.uniform1i(this.dirLightCountLocation, renderContext.dirLightNum);
-        // gl.uniform3f(this.directionalLightDirLocation, ...renderContext.directionalLightDir); // 平行光源
-        // gl.uniform3f(this.directionalLightColorLocation, ...renderContext.directionalLightColor); // 白色光源
+        Debug.log(`Dir Light Count: ${renderContext.dirLightNum}`);
 
         // 点光源関連のユニフォーム変数を設定
         gl.uniform3f(this.pointLightPositionLocation, ...renderContext.pointLightPosition); // 点光源の位置
@@ -676,18 +682,43 @@ class BasicShader extends ShaderProgram {
         // 環境光の設定
         gl.uniform3f(this.ambientLightColorLocation, ...renderContext.ambientLightColor); // 環境光の色
 
-        // 影
-        for (let i = 0; i < renderContext.dirLightNum; i++) {
-            if (renderContext.dirLights[i].enableShadow) {
-                gl.uniform1i(this.enableShadowLocations[i], 1);
-                gl.uniformMatrix4fv(this.lightSpaceMatrixLocations[i], false, renderContext.dirLights[i].lightSpaceMatrix);
-                gl.activeTexture(gl.TEXTURE0 + SHADOWMAP_SLOT + i); 
-                gl.bindTexture(gl.TEXTURE_2D, renderContext.dirLights[i].texture);
-                gl.uniform1i(this.shadowMapLocations[i], SHADOWMAP_SLOT + i); // シャドウマップはテクスチャユニットにバインド
-            } else {
-                gl.uniform1i(this.enableShadowLocations[i], 0);
-            }
+        // 影（全スロットに必ず何かをバインドしてGLエラーを防ぐ）
+        const maxDir = this.lightSpaceMatrixLocations.length; // = MAX_DIR_LIGHTS
+        let fallback = null;
+
+        if (renderContext.dirLightNum > 0) {
+            const idx = Math.min(renderContext.dirLightNum - 1, renderContext.dirLights.length - 1);
+            fallback = renderContext.dirLights[idx] ? renderContext.dirLights[idx].texture : null;
         }
+        // 1x1のダミー深度テクスチャを1回だけ作る
+        if (!fallback) {
+            if (!this._fallbackShadowTex) {
+                const tex = gl.createTexture();
+                gl.bindTexture(gl.TEXTURE_2D, tex);
+                gl.texImage2D(gl.TEXTURE_2D, 0, gl.DEPTH_COMPONENT16, 1, 1, 0, gl.DEPTH_COMPONENT, gl.UNSIGNED_SHORT, null);
+                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+                this._fallbackShadowTex = tex;
+            }
+            fallback = this._fallbackShadowTex;
+        }
+
+        for (let i = 0; i < maxDir; i++) {
+            const withinRange = i < renderContext.dirLightNum;
+            const shadowOn = withinRange && renderContext.dirLights[i].enableShadow;
+            const tex = shadowOn ? renderContext.dirLights[i].texture : fallback;
+
+            gl.uniform1i(this.enableShadowLocations[i], shadowOn ? 1 : 0);
+            if (shadowOn) {
+                gl.uniformMatrix4fv(this.lightSpaceMatrixLocations[i], false, renderContext.dirLights[i].lightSpaceMatrix);
+            }
+            gl.activeTexture(gl.TEXTURE0 + SHADOWMAP_SLOT + i);
+            gl.bindTexture(gl.TEXTURE_2D, tex);
+            gl.uniform1i(this.shadowMapLocations[i], SHADOWMAP_SLOT + i);
+        }
+
 
         if (renderContext.wireFrame) {
             gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, geometry.wire_ibo.buffer);
@@ -696,6 +727,7 @@ class BasicShader extends ShaderProgram {
             gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, geometry.tri_ibo.buffer);
             gl.drawElements(gl.TRIANGLES, geometry.tri_indices_len, gl.UNSIGNED_INT, 0);
         }
+        Debug.checkGlError(gl, 'ShaderProgram render');
     }
 }
 
