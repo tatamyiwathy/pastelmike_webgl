@@ -151,9 +151,13 @@ const fragmentShaderSource = `
     };
     uniform DirectionalLight dirLights[MAX_DIR_LIGHTS];
     uniform int dirLightCount;
+
+    // シャドウマップ
     uniform sampler2D shadowMap[MAX_DIR_LIGHTS]; // パス1で作ったテクスチャ
     uniform bool enableShadow[MAX_DIR_LIGHTS];
-    in vec4 v_positionInLightSpace[MAX_DIR_LIGHTS];// 影
+    uniform int pcfRadius; // 0:1x1, 1:3x3, 2:5x5    
+    in vec4 v_positionInLightSpace[MAX_DIR_LIGHTS];
+    const int MAX_PCF_RADIUS = 2; // 2なら最大5x5
 
     in vec3 v_worldPosition;
     in vec3 v_normal;
@@ -180,9 +184,16 @@ const fragmentShaderSource = `
 
 
         float shadowCount = 0.0;
-        for (int x = -1; x <= 1; ++x) {
-            for (int y = -1; y <= 1; ++y) {
+        float sampleCount = 0.0;
+        for (int x = -MAX_PCF_RADIUS; x <= MAX_PCF_RADIUS; ++x) {
+            for (int y = -MAX_PCF_RADIUS; y <= MAX_PCF_RADIUS; ++y) {
+
+                if (abs(x) > pcfRadius || abs(y) > pcfRadius) {
+                    continue;
+                }
+
                 vec2 uv = projCoords.xy + vec2(x, y) * texelSize;
+                sampleCount += 1.0;
                 if (uv.x < 0.0 || uv.x > 1.0 || uv.y < 0.0 || uv.y > 1.0) {
                     continue;
                 }                
@@ -197,10 +208,11 @@ const fragmentShaderSource = `
                     closestDepth = texture(shadowMap[3], uv).r;
                 }
                 float currentDepth = projCoords.z - bias;
-                shadowCount += currentDepth > closestDepth ? 1.0 : 0.0;
+                shadowCount += step(closestDepth, currentDepth);
             }
         }
-        float shadow = 1.0 - shadowCount / 9.0; // 9回サンプリング
+        float occlusion = (sampleCount > 0.0) ? shadowCount / sampleCount : 0.0;
+        float shadow = 1.0 - occlusion;
         return shadow;
     }
     // float calculateShadowForLight(int lightIndex, vec3 projCoords) {
@@ -600,6 +612,7 @@ class BasicShader extends ShaderProgram {
             this.lightSpaceMatrixLocations[i] = gl.getUniformLocation(this.program, 'lightSpaceMatrix[' + i + ']');
             this.enableShadowLocations[i] = gl.getUniformLocation(this.program, 'enableShadow[' + i + ']');
         }
+        this.pcfRadiusLocation = gl.getUniformLocation(this.program, 'pcfRadius');
 
 
         this.dirLightCountLocation = gl.getUniformLocation(this.program, 'dirLightCount');
@@ -684,6 +697,7 @@ class BasicShader extends ShaderProgram {
             gl.uniform1i(this.dirLightEnableLocations[i], renderContext.dirLights[i].enabled ? 1 : 0);
         }
         gl.uniform1i(this.dirLightCountLocation, renderContext.dirLightNum);
+        gl.uniform1i(this.pcfRadiusLocation, 1);
         Debug.log(`Dir Light Count: ${renderContext.dirLightNum}`);
 
         // 点光源関連のユニフォーム変数を設定
