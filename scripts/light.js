@@ -1,6 +1,6 @@
 import { mat4, vec3} from 'gl-matrix';
 import { Object3d } from './object_3d.js';
-import { createShadowFramebuffer } from './shadow_map.js';
+import { ShadowMap } from './shadow_map.js';
 
 
 class DirectionLight extends Object3d {
@@ -32,10 +32,13 @@ class DirectionLight extends Object3d {
             this.shadowBoxSize = args.shadowBoxSize || 10; // シャドウマップに含める範囲の半分の長さ
             this.lightSpaceMatrix = mat4.create();
 
-            const {framebuffer, texture} = createShadowFramebuffer(gl, 1024);
-            this.frameBuffer = framebuffer;
-            this.texture = texture;
-            this.frameBufferSize = 1024;
+            const shadowMapSize = 1024;
+            this.shadowMap = new ShadowMap(gl, shadowMapSize);
+            
+            // 互換性のため、古いプロパティ名も保持
+            this.frameBuffer = this.shadowMap.framebuffer;
+            this.texture = this.shadowMap.texture;
+            this.frameBufferSize = shadowMapSize;
         }
     }
     

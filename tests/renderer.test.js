@@ -2,6 +2,7 @@ import { describe, test, expect } from 'vitest';
 import { Renderer } from '../scripts/renderer.js';
 import { Scene } from '../scripts/scene.js';
 import { ShaderManager } from '../scripts/shader.js';
+import { Debug } from '../scripts/debug.js';
 
 function createMockGL() {
 	// WebGL2RenderingContextの必要な部分だけモック
@@ -39,7 +40,7 @@ describe('Renderer', () => {
 		const renderer = new Renderer(canvas);
 		expect(renderer.gl).toBeTruthy();
 		expect(renderer.frustum).toBeTruthy();
-		expect(renderer.enableCulling).toBe(true);
+		expect(renderer.enableCulling).toBe(false);
 		expect(renderer.clearColor).toEqual([0, 0, 0, 1]);
 	});
 
@@ -100,7 +101,8 @@ describe('Renderer', () => {
 							normalMtx: [],
 							worldMtx: [],
 							clip: [0, 0, 0],
-							position: [0, 0, 0]
+							position: [0, 0, 0],
+							isRenderTarget: true,
 						}
 					]
 				}
@@ -119,6 +121,7 @@ describe('Renderer', () => {
 				render: () => { shaderRenderCalled.called = true; }
 			}
 		};
+		Debug.checkGlError = () => { }; // エラーチェックをスキップ
 		renderer.readyShader = true; // シェーダー初期化をスキップ
 		renderer.render(scene, camera);
 

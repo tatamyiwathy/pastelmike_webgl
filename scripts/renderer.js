@@ -122,7 +122,7 @@ export class Renderer {
 
             // レンダー対象のオブジェクトを抽出
             const objs = group.children.filter(obj => obj.isRenderTarget);
-            
+            console.log(`Rendering group ${group.name} with ${objs.length} objects.`);
             // カリング
             const culled = this.enableCulling ? this.frustumCulling(objs) : objs;
 
@@ -196,7 +196,6 @@ export class Renderer {
                 }
                 if (obj.type == 'mesh') {
                     Debug.checkGlError(gl, 'Before render');
-                    console.log('dirLights count:', Renderer.renderContext.dirLightNum);
                     const shader = ShaderManager.shader(obj.material.shaderName);
                     shader.render(this.gl, Renderer.renderContext, obj.geometry)
                     Debug.checkGlError(gl, 'after render: obj:'+obj.tagName);
@@ -272,20 +271,10 @@ export class Renderer {
         Debug.log('Light:', light);
         Debug.log('Objects to render:', objs.length);
         
-        //function renderShadowPass(gl, shadowFBO, scene, light) {
-        // 1. フレームバッファをバインド
-        gl.bindFramebuffer(gl.FRAMEBUFFER, light.frameBuffer);
-
-        // 2. ビューポートをシャドウマップの解像度に設定（超重要！）
-        // shadowMapSize は FBO 作成時に指定した 1024 などの値
-        gl.viewport(0, 0, light.frameBufferSize, light.frameBufferSize);
-        // 3. 深度バッファをクリア（1.0で塗りつぶす）
-        gl.clearDepth(1.0);
-        gl.clear(gl.DEPTH_BUFFER_BIT);
-
-        // 4. 背面カリングの設定（後述する「シャドウアクネ」対策）
-        // gl.enable(gl.CULL_FACE);
-        // gl.cullFace(gl.FRONT); // 表面を消して背面だけを描く手法がよく使われます
+        // ShadowMapクラスのメソッドを使用
+        light.shadowMap.bind();
+        light.shadowMap.setViewport();
+        light.shadowMap.clear();
 
         // ポリゴンオフセットでシャドウアクネを低減
         gl.enable(gl.POLYGON_OFFSET_FILL);
@@ -319,11 +308,11 @@ export class Renderer {
         
         Debug.log('Actually rendered:', rendered, 'objects');
 
-        // 6. 設定を元に戻す
+        // 設定を元に戻す
         gl.disable(gl.POLYGON_OFFSET_FILL);
         gl.cullFace(gl.BACK); // 通常の描画に戻す
-        gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-        // ビューポートもメイン描画用に復元（追加）
+        light.shadowMap.unbind();
+        // ビューポートもメイン描画用に復元
         gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
         
         Debug.log('=== Shadow Map Rendering End ===');
