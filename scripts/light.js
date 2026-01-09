@@ -1,6 +1,6 @@
 import { mat4, vec3} from 'gl-matrix';
 import { Object3d } from './object_3d.js';
-import { createShadowFramebuffer } from './offscreen.js';
+import { createShadowFramebuffer } from './shadow_map.js';
 
 
 class DirectionLight extends Object3d {
