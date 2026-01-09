@@ -1,4 +1,4 @@
-import { vec3, quat } from 'gl-matrix';
+import { vec3, quat, mat4, vec4 } from 'gl-matrix';
 
 // 
 export const MathUtils = {
@@ -49,7 +49,59 @@ export const MathUtils = {
         outQuat[2] = axis[2] * invS;
         outQuat[3] = s * 0.5;
         return quat.normalize(outQuat, outQuat);
+    },
+
+    getFrustumCornersWorldSpace: function (cameraMatrix) {
+        const viewProj = mat4.create();
+        mat4.multiply(viewProj, cameraMatrix.projection, cameraMatrix.view);
+
+        const invViewProj = mat4.create();
+        mat4.invert(invViewProj, viewProj);
+
+        // WebGL(OpenGL) NDC: z = -1 near, +1 far
+        const ndc = [
+            [-1, -1, -1, 1], [1, -1, -1, 1], [-1, 1, -1, 1], [1, 1, -1, 1],
+            [-1, -1, 1, 1], [1, -1, 1, 1], [-1, 1, 1, 1], [1, 1, 1, 1],
+        ];
+
+        const corners = [];
+        for (const p of ndc) {
+            const v = vec4.fromValues(p[0], p[1], p[2], p[3]);
+            vec4.transformMat4(v, v, invViewProj);
+            v[0] /= v[3]; v[1] /= v[3]; v[2] /= v[3];
+            corners.push([v[0], v[1], v[2]]);
+        }
+        return corners;
+    },
+
+
+    fitDirLightOrthoToCamera: function (cameraMatrix, lightView, margin = 5.0) {
+        const cornersWS = MathUtils.getFrustumCornersWorldSpace(cameraMatrix);
+
+        let minX = Infinity, minY = Infinity, minZ = Infinity;
+        let maxX = -Infinity, maxY = -Infinity, maxZ = -Infinity;
+
+        for (const c of cornersWS) {
+            const v = vec4.fromValues(c[0], c[1], c[2], 1.0);
+            vec4.transformMat4(v, v, lightView);
+            minX = Math.min(minX, v[0]); maxX = Math.max(maxX, v[0]);
+            minY = Math.min(minY, v[1]); maxY = Math.max(maxY, v[1]);
+            minZ = Math.min(minZ, v[2]); maxZ = Math.max(maxZ, v[2]);
+        }
+
+        minX -= margin; maxX += margin;
+        minY -= margin; maxY += margin;
+        minZ -= margin; maxZ += margin;
+
+        const lightProj = mat4.create();
+        mat4.ortho(lightProj, minX, maxX, minY, maxY, minZ, maxZ);
+
+        const lightSpace = mat4.create();
+        mat4.multiply(lightSpace, lightProj, lightView);
+
+        return { lightProj, lightSpace, bounds: { minX, maxX, minY, maxY, minZ, maxZ } };
     }
+
 
 };
 

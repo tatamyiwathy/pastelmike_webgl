@@ -1,6 +1,7 @@
-import { mat4, vec3} from 'gl-matrix';
+import { mat4, vec3, vec4 } from 'gl-matrix';
 import { Object3d } from './object_3d.js';
 import { ShadowMap } from './shadow_map.js';
+import { MathUtils } from './math_utils.js';
 
 
 class DirectionLight extends Object3d {
@@ -34,14 +35,14 @@ class DirectionLight extends Object3d {
 
             const shadowMapSize = 1024;
             this.shadowMap = new ShadowMap(gl, shadowMapSize);
-            
+
             // 互換性のため、古いプロパティ名も保持
             this.frameBuffer = this.shadowMap.framebuffer;
             this.texture = this.shadowMap.texture;
             this.frameBufferSize = shadowMapSize;
         }
     }
-    
+
     get targetPosition() {
         return this._targetPosition;
     }
@@ -61,22 +62,59 @@ class DirectionLight extends Object3d {
         return this._direction;
     }
 
-    updateMatrix(projection, view, proj_view) {
-        // directionを更新
+    updateMatrix(cameraMatrix, proj_view) {
+        // direction更新
         vec3.sub(this._direction, this.targetPosition, this.position);
         vec3.normalize(this._direction, this._direction);
 
-        if (!this.enableShadow) {
-            return;
-        }
-        // ライト位置 + 方向ベクトルを注視点とする
+        if (!this.enableShadow) return;
+
+        // light view
         const target = vec3.create();
-        vec3.add(target, this.position, this.direction);
+        vec3.add(target, this.position, this._direction);
         const lightViewMatrix = mat4.lookAt(mat4.create(), this.position, target, this.up);
-        const size = this.shadowBoxSize; // ライトがカバーする範囲（半径）
-        const lightProjectionMatrix = mat4.ortho(mat4.create(), -size, size, -size, size, this.near, this.far);
-        // lightSpaceMatrix = P * V
-        mat4.multiply(this.lightSpaceMatrix, lightProjectionMatrix, lightViewMatrix);
+
+        // inv VP (camera)
+        const invViewProj = mat4.create();
+        mat4.invert(invViewProj, proj_view);
+
+        // frustum corners in world
+        const ndcCorners = [
+            [-1, -1, -1, 1], [1, -1, -1, 1], [-1, 1, -1, 1], [1, 1, -1, 1],
+            [-1, -1, 1, 1], [1, -1, 1, 1], [-1, 1, 1, 1], [1, 1, 1, 1],
+        ];
+
+        let minX = Infinity, minY = Infinity, minZ = Infinity;
+        let maxX = -Infinity, maxY = -Infinity, maxZ = -Infinity;
+
+        for (const p of ndcCorners) {
+            const v = vec4.fromValues(p[0], p[1], p[2], p[3]);
+            vec4.transformMat4(v, v, invViewProj);
+            v[0] /= v[3]; v[1] /= v[3]; v[2] /= v[3];
+            v[3] = 1.0;
+
+            const lv = vec4.create();
+            vec4.transformMat4(lv, v, lightViewMatrix);
+
+            minX = Math.min(minX, lv[0]); maxX = Math.max(maxX, lv[0]);
+            minY = Math.min(minY, lv[1]); maxY = Math.max(maxY, lv[1]);
+            minZ = Math.min(minZ, lv[2]); maxZ = Math.max(maxZ, lv[2]);
+        }
+
+        // margins (safe for angled lights)
+        const marginXY = 12.0;
+        const marginZ = 80.0;
+        minX -= marginXY; maxX += marginXY;
+        minY -= marginXY; maxY += marginXY;
+        minZ -= marginZ; maxZ += marginZ;
+
+        // ensure near <= far
+        let nearZ = minZ - marginZ, farZ = maxZ + marginZ;
+        if (nearZ > farZ) { const t = nearZ; nearZ = farZ; farZ = t; }
+
+        const lightProjMatrix = mat4.ortho(mat4.create(), minX, maxX, minY, maxY, nearZ, farZ);
+
+        mat4.multiply(this.lightSpaceMatrix, lightProjMatrix, lightViewMatrix);
     }
 }
 

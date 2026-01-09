@@ -126,7 +126,6 @@ export class Renderer {
 
             // レンダー対象のオブジェクトを抽出
             const objs = group.children.filter(obj => obj.isRenderTarget);
-            console.log(`Rendering group ${group.name} with ${objs.length} objects.`);
             // カリング
             const culled = this.enableCulling ? this.frustumCulling(objs) : objs;
 

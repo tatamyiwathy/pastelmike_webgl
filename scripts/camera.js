@@ -1,6 +1,7 @@
-import { mat4, vec3 } from 'gl-matrix';
+import { mat4, vec3, vec4 } from 'gl-matrix';
 import { Object3d } from "./object_3d.js";
 import { MathUtils } from "./math_utils.js";
+
 
 class Camera extends Object3d {
     constructor(options = {}) {
@@ -23,7 +24,7 @@ class Camera extends Object3d {
 
     get up() {
         return this._up;
-    }   
+    }
 
     set position(v) {
         if (v instanceof Float32Array) {
@@ -74,5 +75,6 @@ class PerspectiveCamera extends Camera {
         this.lookAt(lookat);
     }
 }
+
 
 export { Camera, PerspectiveCamera };
