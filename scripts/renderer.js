@@ -113,7 +113,11 @@ export class Renderer {
         
         dirLights.forEach((light) => {
             if (light.enableShadow) {
-                light.updateMatrix(camera.projMtx, camera.mdlViewMtx, this.vpMtx);
+                const cameraMatrix = {
+                    projection: camera.projMtx,
+                    view: camera.mdlViewMtx,
+                }
+                light.updateMatrix(cameraMatrix, this.vpMtx);
                 this.renderShadowMap(gl, allRenderableObjects, light);
             }
         });
@@ -141,7 +145,11 @@ export class Renderer {
 
             // 行列の更新
             culled.forEach((obj) => {
-                obj.updateMatrix(camera.projMtx, camera.mdlViewMtx, this.vpMtx);
+                const cameraMatrix = {
+                    projection: camera.projMtx,
+                    view: camera.mdlViewMtx,
+                }
+                obj.updateMatrix(cameraMatrix, this.vpMtx);
             });
 
             // デバッグ: シャドウマップ可視化

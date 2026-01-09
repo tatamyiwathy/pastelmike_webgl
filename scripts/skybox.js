@@ -7,16 +7,16 @@ class Skybox extends Mesh {
         super(gl, new Geometry(gl,Skybox.positions), new CubeMapMaterial(gl,{textures: args.textures}));
     }
 
-    updateMatrix(projection, view, proj_view) 
+    updateMatrix(cameraMatrix, proj_view) 
     {
         // スカイボックス用の行列を計算: ビュー行列から平行移動成分を削除
-        const viewDirectionMatrix = glMatrix.mat4.clone(view);
+        const viewDirectionMatrix = glMatrix.mat4.clone(cameraMatrix.view);
         viewDirectionMatrix[12] = 0;
         viewDirectionMatrix[13] = 0;
         viewDirectionMatrix[14] = 0;
 
         // ビュー方向行列と射影行列を結合
-        glMatrix.mat4.multiply(this.mvpMtx, projection, viewDirectionMatrix);
+        glMatrix.mat4.multiply(this.mvpMtx, cameraMatrix.projection, viewDirectionMatrix);
 
     }
 

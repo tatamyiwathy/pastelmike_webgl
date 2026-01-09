@@ -95,7 +95,11 @@ describe('Object3d', () => {
     obj.scale = [2,2,2];
     obj.rotation = [0,0,0];
     // クォータニオンは初期値(回転なし)
-    obj.updateMatrix(identity, identity, identity);
+    const cameraMatrix = {
+      view: identity,
+      projection: identity
+    };
+    obj.updateMatrix(cameraMatrix, identity);
     // mvpMtx, worldMtx, normalMtx, clipがFloat32Arrayであること
     expect(obj.mvpMtx).toBeInstanceOf(Float32Array);
     expect(obj.worldMtx).toBeInstanceOf(Float32Array);

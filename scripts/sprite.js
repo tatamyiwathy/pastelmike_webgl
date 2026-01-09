@@ -14,7 +14,7 @@ class Sprite extends Mesh {
     constructor(gl, texture, options = {}) {
         super(gl, create_plain_geometry(gl, 1), new SpriteMaterial(texture));
     }
-    updateMatrix(projMtx, viewMtx, vpMtx) {
+    updateMatrix(cameraMatrix, vpMtx) {
         // 1. まず位置とスケールでワールド行列を作る
         // ※ this.quaternion は無視するか、identityにする（ビルボードなので）
         mat4.fromTranslation(this.worldMtx, this.position);
@@ -25,19 +25,19 @@ class Sprite extends Mesh {
         // 0,1,2 = Right軸,  4,5,6 = Up軸,  8,9,10 = Forward軸
 
         // Right
-        this.worldMtx[0] = viewMtx[0];
-        this.worldMtx[1] = viewMtx[4];
-        this.worldMtx[2] = viewMtx[8];
+        this.worldMtx[0] = cameraMatrix.view[0];
+        this.worldMtx[1] = cameraMatrix.view[4];
+        this.worldMtx[2] = cameraMatrix.view[8];
 
         // Up
-        this.worldMtx[4] = viewMtx[1];
-        this.worldMtx[5] = viewMtx[5];
-        this.worldMtx[6] = viewMtx[9];
+        this.worldMtx[4] = cameraMatrix.view[1];
+        this.worldMtx[5] = cameraMatrix.view[5];
+        this.worldMtx[6] = cameraMatrix.view[9];
 
         // Forward
-        this.worldMtx[8] = viewMtx[2];
-        this.worldMtx[9] = viewMtx[6];
-        this.worldMtx[10] = viewMtx[10];
+        this.worldMtx[8] = cameraMatrix.view[2];
+        this.worldMtx[9] = cameraMatrix.view[6];
+        this.worldMtx[10] = cameraMatrix.view[10];
 
         // 3. スケールを再適用
         // 回転を上書きした際にスケールが1.0に戻ってしまうため、再度掛ける

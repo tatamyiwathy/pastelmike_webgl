@@ -118,7 +118,7 @@ class Object3d {
 
     updateFrame(deltaTime) { }
 
-    updateMatrix(projection, view, proj_view) {
+    updateMatrix(cameraMatrix, proj_view) {
         // クリップ座標計算
         vec4.transformMat4(this.clip, [this.position[0], this.position[1], this.position[2], 1.0], proj_view);
 
