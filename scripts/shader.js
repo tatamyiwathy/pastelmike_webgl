@@ -163,37 +163,50 @@ const fragmentShaderSource = `
     
     out vec4 outColor;
     
-    float calculateShadowForLight(int lightIndex, vec3 projCoords) {
-        // 3. バイアスでアクネを低減
-        float bias = 0.0015;
+    float calculateShadowForLight(int lightIndex, vec3 projCoords, float bias) {
 
         // 4. 簡易PCF (3x3)
-        // WebGL 2.0では動的インデックスが許可されないため、lightIndexを使い分ける
-        float occlusion = 0.0;
+
+        vec2 texelSize;
+        if (lightIndex == 0) {
+            texelSize = 1.0 / vec2(textureSize(shadowMap[0], 0));
+        } else if (lightIndex == 1) {
+            texelSize = 1.0 / vec2(textureSize(shadowMap[1], 0));
+        } else if (lightIndex == 2) {
+            texelSize = 1.0 / vec2(textureSize(shadowMap[2], 0));
+        } else {
+            texelSize = 1.0 / vec2(textureSize(shadowMap[3], 0));
+        }
+
+
+        float shadowCount = 0.0;
         for (int x = -1; x <= 1; ++x) {
             for (int y = -1; y <= 1; ++y) {
-                float closestDepth = 0.0;
+                vec2 uv = projCoords.xy + vec2(x, y) * texelSize;
+                if (uv.x < 0.0 || uv.x > 1.0 || uv.y < 0.0 || uv.y > 1.0) {
+                    continue;
+                }                
+                float closestDepth;
                 if (lightIndex == 0) {
-                    closestDepth = texture(shadowMap[0], projCoords.xy + vec2(x, y) / vec2(textureSize(shadowMap[0], 0))).r;
+                    closestDepth = texture(shadowMap[0], uv).r;
                 } else if (lightIndex == 1) {
-                    closestDepth = texture(shadowMap[1], projCoords.xy + vec2(x, y) / vec2(textureSize(shadowMap[1], 0))).r;
+                    closestDepth = texture(shadowMap[1], uv).r;
                 } else if (lightIndex == 2) {
-                    closestDepth = texture(shadowMap[2], projCoords.xy + vec2(x, y) / vec2(textureSize(shadowMap[2], 0))).r;
+                    closestDepth = texture(shadowMap[2], uv).r;
                 } else {
-                    closestDepth = texture(shadowMap[3], projCoords.xy + vec2(x, y) / vec2(textureSize(shadowMap[3], 0))).r;
+                    closestDepth = texture(shadowMap[3], uv).r;
                 }
                 float currentDepth = projCoords.z - bias;
-                occlusion += currentDepth > closestDepth ? 1.0 : 0.0;
+                shadowCount += currentDepth > closestDepth ? 1.0 : 0.0;
             }
         }
-        occlusion /= 9.0;
-        float shadow = 1.0 - occlusion;
+        float shadow = 1.0 - shadowCount / 9.0; // 9回サンプリング
         return shadow;
     }
     // float calculateShadowForLight(int lightIndex, vec3 projCoords) {
     //     return 1.0; // とりあえず影なしで固定
     // }
-    float calculateShadow(int lightIndex) {
+    float calculateShadow(int lightIndex, vec3 N, vec3 Ld) {
         // 1. 透視除算 (wで割る) 
         // 平行光源(ortho)の場合はw=1ですが、汎用性のために行います
         // vec3 projCoords = v_positionInLightSpace[lightIndex].xyz / v_positionInLightSpace[lightIndex].w;
@@ -215,7 +228,9 @@ const fragmentShaderSource = `
         }
         // ------------------        
 
-        return calculateShadowForLight(lightIndex, projCoords);
+        float bias = max(0.001 * (1.0 - dot(N, Ld)), 0.0005);
+        bias = min(bias, 0.01); // 上限はシーンに合わせて調整
+        return calculateShadowForLight(lightIndex, projCoords, bias);
     }
     
     void main() {
@@ -241,7 +256,7 @@ const fragmentShaderSource = `
 
             // 影の計算
             if( enableShadow[i] ) {
-                float shadow = calculateShadow(i);
+                float shadow = calculateShadow(i, N, Ld);
                 lightContribution *= shadow; // 影の影響を乗算
             }
 
