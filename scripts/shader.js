@@ -309,7 +309,7 @@ const fragmentShaderSource = `
         float ambientShadowFactor = mix(ambientInShadow, 1.0, shadowFactor);
         vec3 ambient = ambientLightColor * color.rgb * ambientShadowFactor;
 
-        vec4 combinedColor = vec4(baseColor.rgb  ambient, baseColor.a);
+        vec4 combinedColor = vec4(baseColor.rgb + ambient, baseColor.a);
 
         outColor = combinedColor;
 
