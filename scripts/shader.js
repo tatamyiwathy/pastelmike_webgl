@@ -255,6 +255,7 @@ const fragmentShaderSource = `
         vec3 totalSpecular = vec3(0.0);
 
 
+        float shadowFactor = 1.0;
         for (int i = 0; i < MAX_DIR_LIGHTS; i++) {
             if (i >= dirLightCount) break;
             if (dirLights[i].enabled == 0) continue;
@@ -267,10 +268,12 @@ const fragmentShaderSource = `
             vec3 lightContribution = diffD * dirLights[i].color;
 
             // 影の計算
+            float shadow = 1.0;
             if( enableShadow[i] ) {
-                float shadow = calculateShadow(i, N, Ld);
-                lightContribution *= shadow; // 影の影響を乗算
+                shadow = calculateShadow(i, N, Ld);
+                shadow = smoothstep(0.2, 0.8, shadow);
             }
+            shadowFactor = min(shadowFactor, shadow);
 
             totalDiffuse += lightContribution;
 #ifdef USE_SPECULAR
@@ -294,13 +297,19 @@ const fragmentShaderSource = `
         totalDiffuse += diffuseP;
 
         // 最終的な色の合成
-        vec4 baseColor = vec4(totalDiffuse + totalSpecular, 1.0) * color;
+        vec3 lit = (totalDiffuse + totalSpecular) * shadowFactor;
+        vec4 baseColor = vec4(lit, 1.0) * color;
 
         if (useTexture) {
             // 頂点シェーダーから渡されたUV座標をそのまま使う
             baseColor *= texture(samples, v_texcoord);
         }
-        vec4 combinedColor = vec4(baseColor.rgb + (ambientLightColor * color.rgb), baseColor.a);
+
+        float ambientInShadow = 0.15; // いまの設定
+        float ambientShadowFactor = mix(ambientInShadow, 1.0, shadowFactor);
+        vec3 ambient = ambientLightColor * color.rgb * ambientShadowFactor;
+
+        vec4 combinedColor = vec4(baseColor.rgb  ambient, baseColor.a);
 
         outColor = combinedColor;
 
