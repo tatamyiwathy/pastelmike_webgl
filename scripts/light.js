@@ -112,24 +112,6 @@ class DirectionLight extends Object3d {
         let nearZ = minZ - marginZ, farZ = maxZ + marginZ;
         if (nearZ > farZ) { const t = nearZ; nearZ = farZ; farZ = t; }
 
-
-        const width  = maxX - minX;
-        const height = maxY - minY;
-
-        const texelX = width  / this.shadowMapSize;
-        const texelY = height / this.shadowMapSize;
-
-        let cx = (minX + maxX) * 0.5;
-        let cy = (minY + maxY) * 0.5;
-
-        cx = Math.round(cx / texelX) * texelX;
-        cy = Math.round(cy / texelY) * texelY;
-
-        minX = cx - width  * 0.5;
-        maxX = cx + width  * 0.5;
-        minY = cy - height * 0.5;
-        maxY = cy + height * 0.5;
-
         const lightProjMatrix = mat4.ortho(mat4.create(), minX, maxX, minY, maxY, nearZ, farZ);
 
         mat4.multiply(this.lightSpaceMatrix, lightProjMatrix, lightViewMatrix);
